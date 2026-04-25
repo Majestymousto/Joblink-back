@@ -39,7 +39,7 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 - [x] Modèles Eloquent (User, Candidate, Employer, JobOffer, Application, SavedJob, Message)
 - [x] `POST /api/register` — candidat et employeur
 - [x] `POST /api/login` — avec vérification statut employeur
-- [x] `POST /api/auth/google`
+- [x] `POST /api/auth/google` — testé et validé
 - [x] `POST /api/logout`
 - [x] `GET /api/me`
 - [x] Profil candidat créé automatiquement à l'inscription
@@ -65,7 +65,7 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 - [ ] `GET /api/buildcvpro/check`
 - [ ] Détection automatique par email
 
-### Jour 6-7 — Flutter JobLink Mobile 🔨
+### Jour 6-7 — Mobile 🔨
 - [ ] Auth + offres + postuler
 - [ ] Profil + import CV Build CV Pro
 
@@ -147,7 +147,6 @@ Chaque requête doit inclure le header `X-Source` :
 
 | Valeur | Origine |
 |---|---|
-| `flutter-memoire` | App Flutter JobLink |
 | `web-memoire` | Web Vue.js JobLink |
 | `unknown` | Source inconnue ⚠️ |
 
@@ -155,7 +154,7 @@ Chaque requête doit inclure le header `X-Source` :
 
 ## 📄 Documentation API
 
-Voir [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) pour la documentation complète. des endpoints disponibles.
+Voir [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) pour la documentation complète des endpoints disponibles.
 
 ---
 
