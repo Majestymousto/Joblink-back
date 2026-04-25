@@ -12,53 +12,33 @@
 
 ## 📋 À propos du projet
 
-JobLink Niger est une plateforme de mise en relation professionnelle qui permet aux entreprises de publier des offres d'emploi et aux candidats de postuler. Le projet intègre également une connexion avec **Build CV Pro** pour permettre aux candidats d'importer leurs CVs directement.
+JobLink Niger est une plateforme de mise en relation professionnelle qui permet aux entreprises de publier des offres d'emploi et aux candidats de consulter et postuler. Les entreprises peuvent également consulter les profils des candidats.
+
+Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 
 ### Projets liés
-- **JobLink Frontend** — Vue.js (terminé)
-- **JobLink Backend** — Laravel API REST (ce dépôt — en cours)
-- **Build CV Pro** — [buildcvpro.com](https://buildcvpro.com) (SaaS de génération de CV)
+- **JobLink Frontend** — Vue.js (dépôt séparé — terminé)
+- **JobLink Mobile** — Flutter (à venir)
+- **Build CV Pro** — [buildcvpro.com](https://buildcvpro.com) — intégration optionnelle pour importer des CVs
 
 ---
 
 ## ✅ Avancement
 
-### Jour 1-2 — Build CV Pro APIs
-- [x] Laravel Sanctum installé et configuré
-- [x] Google Auth via Socialite
-- [x] Source tracking avec header `X-Source`
-- [x] `POST /api/register`
-- [x] `POST /api/login`
-- [x] `POST /api/auth/google`
-- [x] `POST /api/logout`
-- [x] `GET /api/me`
-- [x] `POST /api/check-email`
-- [x] `GET /api/resumes`
-- [x] `GET /api/resumes/{id}`
-- [x] `POST /api/resumes`
-- [x] `PUT /api/resumes/{id}`
-- [x] `DELETE /api/resumes/{id}`
-- [x] `GET /api/resumes/{id}/download` (PDF)
-- [x] `GET /api/cover-letters`
-- [x] `GET /api/cover-letters/{id}`
-- [x] `POST /api/cover-letters`
-- [x] `PUT /api/cover-letters/{id}`
-- [x] `DELETE /api/cover-letters/{id}`
-
-### Jour 3 — Backend JobLink (Auth)
+### Jour 3 — Auth + Base de données ✅
 - [x] Projet Laravel créé
 - [x] Base de données MySQL configurée
-- [x] Migrations créées et executées
-  - [x] `users` (avec rôles candidate/employer/admin)
+- [x] Migrations créées et exécutées
+  - [x] `users` (avec rôles candidate / employer / admin)
   - [x] `candidates`
   - [x] `employers`
   - [x] `job_offers`
   - [x] `applications`
   - [x] `saved_jobs`
   - [x] `messages`
-- [x] Modèles créés (User, Candidate, Employer, JobOffer, Application, SavedJob, Message)
-- [x] `POST /api/register` (candidat + employeur)
-- [x] `POST /api/login` (avec vérification statut employeur)
+- [x] Modèles Eloquent (User, Candidate, Employer, JobOffer, Application, SavedJob, Message)
+- [x] `POST /api/register` — candidat et employeur
+- [x] `POST /api/login` — avec vérification statut employeur
 - [x] `POST /api/auth/google`
 - [x] `POST /api/logout`
 - [x] `GET /api/me`
@@ -66,7 +46,7 @@ JobLink Niger est une plateforme de mise en relation professionnelle qui permet 
 - [x] Profil employeur créé avec statut `pending` à l'inscription
 - [x] Source tracking avec header `X-Source`
 
-### Jour 4 — Offres & Candidatures
+### Jour 4 — Offres & Candidatures 🔨
 - [ ] `GET /api/job-offers` (liste publique avec filtres)
 - [ ] `GET /api/job-offers/{id}` (détail)
 - [ ] `POST /api/job-offers` (créer — entreprise)
@@ -78,25 +58,21 @@ JobLink Niger est une plateforme de mise en relation professionnelle qui permet 
 - [ ] `GET /api/job-offers/{id}/candidats` (voir candidats — entreprise)
 - [ ] `PUT /api/candidatures/{id}/statut` (changer statut — entreprise)
 
-### Jour 5 — Intégration Build CV Pro
+### Jour 5 — Intégration Build CV Pro 🔨
 - [ ] `POST /api/buildcvpro/connect`
 - [ ] `GET /api/buildcvpro/cvs`
 - [ ] `DELETE /api/buildcvpro/disconnect`
 - [ ] `GET /api/buildcvpro/check`
 - [ ] Détection automatique par email
 
-### Jour 6-7 — Flutter Build CV Pro
-- [ ] Auth + liste CVs
-- [ ] Génération CV + Lettre de motivation
-
-### Jour 8-9 — Flutter JobLink
+### Jour 6-7 — Flutter JobLink Mobile 🔨
 - [ ] Auth + offres + postuler
 - [ ] Profil + import CV Build CV Pro
 
-### Jour 10 — Finition
+### Jour 8 — Finition 🔨
 - [ ] Tests end-to-end
 - [ ] Fix bugs critiques
-- [ ] Préparation démo
+- [ ] Préparation démo mémoire
 
 ---
 
@@ -110,6 +86,16 @@ JobLink Niger est une plateforme de mise en relation professionnelle qui permet 
 | Base de données | MySQL 8 |
 | Frontend | Vue.js (dépôt séparé) |
 | Mobile | Flutter (à venir) |
+
+---
+
+## 👥 Rôles
+
+| Rôle | Description |
+|---|---|
+| `candidate` | Parcourir les offres, postuler, gérer son profil |
+| `employer` | Publier des offres, voir les candidatures (nécessite validation admin) |
+| `admin` | Gérer la plateforme, valider les comptes entreprises |
 
 ---
 
@@ -152,11 +138,12 @@ L'API utilise **Laravel Sanctum** avec des tokens Bearer.
 
 ```
 Authorization: Bearer votre_token_ici
+Accept: application/json
 ```
 
 ### Source Tracking
 
-Chaque requête doit inclure le header `X-Source` pour identifier l'origine :
+Chaque requête doit inclure le header `X-Source` :
 
 | Valeur | Origine |
 |---|---|
@@ -166,25 +153,9 @@ Chaque requête doit inclure le header `X-Source` pour identifier l'origine :
 
 ---
 
-## 👥 Rôles
-
-| Rôle | Description |
-|---|---|
-| `candidate` | Peut parcourir les offres, postuler, gérer son profil |
-| `employer` | Peut publier des offres, voir les candidatures (nécessite validation admin) |
-| `admin` | Gère la plateforme, valide les comptes entreprises |
-
----
-
-## 🔗 Intégration Build CV Pro
-
-Les candidats peuvent connecter leur compte [Build CV Pro](https://buildcvpro.com) pour importer leurs CVs générés directement dans JobLink Niger.
-
----
-
 ## 📄 Documentation API
 
-Voir le fichier `API_DOCUMENTATION.md` pour la documentation complète des endpoints disponibles.
+Voir [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) pour la documentation complète. des endpoints disponibles.
 
 ---
 
