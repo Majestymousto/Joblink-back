@@ -46,30 +46,38 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 - [x] Profil employeur créé avec statut `pending` à l'inscription
 - [x] Source tracking avec header `X-Source`
 
-### Jour 4 — Offres & Candidatures 🔨
-- [ ] `GET /api/job-offers` (liste publique avec filtres)
-- [ ] `GET /api/job-offers/{id}` (détail)
-- [ ] `POST /api/job-offers` (créer — entreprise)
-- [ ] `PUT /api/job-offers/{id}` (modifier — entreprise)
-- [ ] `DELETE /api/job-offers/{id}` (supprimer — entreprise)
-- [ ] `POST /api/job-offers/{id}/apply` (postuler — candidat)
-- [ ] `GET /api/mes-candidatures` (candidat)
-- [ ] `DELETE /api/candidatures/{id}` (retirer — candidat)
-- [ ] `GET /api/job-offers/{id}/candidats` (voir candidats — entreprise)
-- [ ] `PUT /api/candidatures/{id}/statut` (changer statut — entreprise)
+### Jour 4 — Offres & Candidatures ✅
+- [x] `GET /api/job-offers` — liste publique avec filtres et pagination
+- [x] `GET /api/job-offers/{id}` — détail avec compteur de vues
+- [x] `POST /api/job-offers` — créer une offre (employeur validé)
+- [x] `PUT /api/job-offers/{id}` — modifier une offre
+- [x] `DELETE /api/job-offers/{id}` — supprimer une offre
+- [x] `POST /api/job-offers/{id}/apply` — postuler à une offre
+- [x] `GET /api/mes-candidatures` — mes candidatures (candidat)
+- [x] `DELETE /api/candidatures/{id}` — retirer une candidature
+- [x] `GET /api/job-offers/{id}/candidats` — voir les candidats (employeur)
+- [x] `PUT /api/candidatures/{id}/statut` — changer le statut
+- [x] `GET /api/profil` — mon profil
+- [x] `PUT /api/profil` — modifier mon profil
+- [x] `GET /api/candidats` — liste des candidats (employeur)
+- [x] `GET /api/candidats/{id}` — profil d'un candidat (employeur)
+- [x] `POST /api/job-offers/{id}/save` — sauvegarder une offre
+- [x] `DELETE /api/job-offers/{id}/save` — retirer des sauvegardes
+- [x] `GET /api/offres-sauvegardees` — liste des offres sauvegardées
 
-### Jour 5 — Intégration Build CV Pro 🔨
-- [ ] `POST /api/buildcvpro/connect`
-- [ ] `GET /api/buildcvpro/cvs`
-- [ ] `DELETE /api/buildcvpro/disconnect`
-- [ ] `GET /api/buildcvpro/check`
-- [ ] Détection automatique par email
+### Jour 5 — Intégration Build CV Pro ✅
+- [x] `GET /api/buildcvpro/check` — vérifier si email existe sur Build CV Pro
+- [x] `POST /api/buildcvpro/connect` — connecter son compte Build CV Pro
+- [x] `GET /api/buildcvpro/cvs` — récupérer ses CVs depuis Build CV Pro
+- [x] `DELETE /api/buildcvpro/disconnect` — déconnecter Build CV Pro
+- [x] Détection automatique par email
+- [x] URL Build CV Pro configurable via `.env`
 
-### Jour 6-7 — Mobile 🔨
+### Mobile 🔨
 - [ ] Auth + offres + postuler
 - [ ] Profil + import CV Build CV Pro
 
-### Jour 8 — Finition 🔨
+### Finition 🔨
 - [ ] Tests end-to-end
 - [ ] Fix bugs critiques
 - [ ] Préparation démo mémoire
@@ -127,7 +135,7 @@ DB_PASSWORD=ton_password
 php artisan migrate
 
 # Démarrer le serveur
-php artisan serve
+php artisan serve --port=8001
 ```
 
 ---
@@ -149,6 +157,18 @@ Chaque requête doit inclure le header `X-Source` :
 |---|---|
 | `web-memoire` | Web Vue.js JobLink |
 | `unknown` | Source inconnue ⚠️ |
+
+---
+
+## 🔗 Intégration Build CV Pro
+
+Par défaut l'API pointe vers la version production de Build CV Pro (`buildcvpro.com`).
+
+Pour utiliser une version locale, ajoute dans ton `.env` :
+
+```
+BUILDCVPRO_URL=http://127.0.0.1:8000/api
+```
 
 ---
 
