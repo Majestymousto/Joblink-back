@@ -10,13 +10,13 @@ class Application extends Model
     use HasFactory;
 
     protected $fillable = [
-        'candidate_id',
-        'job_offer_id',
-        'status',
-        'cv_path',
-        'buildcvpro_cv_id',
-        'message',
-    ];
+    'candidate_id',
+    'job_offer_id',
+    'status',
+    'cv_path',
+    'buildcvpro_cv_id',
+    'message',
+];
 
     // Relations
     public function candidate()

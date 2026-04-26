@@ -15,13 +15,14 @@ class JobOfferController extends Controller
         $query = JobOffer::with('employer')->where('statut', 'active');
 
         // Recherche par mot clé
-        if ($request->query) {
-            $query->where(function ($q) use ($request) {
-                $q->where('titre', 'like', "%{$request->query}%")
-                  ->orWhere('description', 'like', "%{$request->query}%")
-                  ->orWhereJsonContains('competences', $request->query);
-            });
-        }
+        // Après
+if ($request->get('query')) {
+    $search = $request->get('query');
+    $query->where(function($q) use ($search) {
+        $q->where('titre', 'like', '%' . $search . '%')
+          ->orWhere('description', 'like', '%' . $search . '%');
+    });
+}
 
         // Filtre par localisation
         if ($request->localisation) {

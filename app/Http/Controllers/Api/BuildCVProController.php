@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Http;
 
 class BuildCVProController extends Controller
 {
-    private string $buildCVBaseUrl = 'https://buildcvpro.com/api';
+    private string $buildCVBaseUrl;
 
+public function __construct()
+{
+    $this->buildCVBaseUrl = env('BUILDCVPRO_URL', 'https://buildcvpro.com/api');
+}
     // Connecter son compte BuildCVPro
     public function connect(Request $request)
     {
