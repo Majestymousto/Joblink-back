@@ -6,7 +6,7 @@
 ![PHP](https://img.shields.io/badge/PHP-8.2-blue?style=flat-square&logo=php)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?style=flat-square&logo=mysql)
 ![Sanctum](https://img.shields.io/badge/Auth-Sanctum-green?style=flat-square)
-![Status](https://img.shields.io/badge/Status-En%20développement-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Backend%20complet-brightgreen?style=flat-square)
 
 ---
 
@@ -19,68 +19,72 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 ### Projets liés
 - **JobLink Frontend** — Vue.js (dépôt séparé — terminé)
 - **JobLink Mobile** — Flutter (à venir)
-- **Build CV Pro** — [buildcvpro.com](https://buildcvpro.com) — intégration optionnelle pour importer des CVs
+- **Build CV Pro** — [buildcvpro.com](https://buildcvpro.com) — intégration pour importer des CVs
 
 ---
 
 ## ✅ Avancement
 
-### Jour 3 — Auth + Base de données ✅
-- [x] Projet Laravel créé
-- [x] Base de données MySQL configurée
-- [x] Migrations créées et exécutées
-  - [x] `users` (avec rôles candidate / employer / admin)
-  - [x] `candidates`
-  - [x] `employers`
-  - [x] `job_offers`
-  - [x] `applications`
-  - [x] `saved_jobs`
-  - [x] `messages`
-- [x] Modèles Eloquent (User, Candidate, Employer, JobOffer, Application, SavedJob, Message)
+### Auth ✅
 - [x] `POST /api/register` — candidat et employeur
 - [x] `POST /api/login` — avec vérification statut employeur
-- [x] `POST /api/auth/google` — testé et validé
+- [x] `POST /api/auth/google`
 - [x] `POST /api/logout`
 - [x] `GET /api/me`
 - [x] Profil candidat créé automatiquement à l'inscription
 - [x] Profil employeur créé avec statut `pending` à l'inscription
 - [x] Source tracking avec header `X-Source`
 
-### Jour 4 — Offres & Candidatures ✅
+### Offres d'emploi ✅
 - [x] `GET /api/job-offers` — liste publique avec filtres et pagination
 - [x] `GET /api/job-offers/{id}` — détail avec compteur de vues
 - [x] `POST /api/job-offers` — créer une offre (employeur validé)
 - [x] `PUT /api/job-offers/{id}` — modifier une offre
 - [x] `DELETE /api/job-offers/{id}` — supprimer une offre
-- [x] `POST /api/job-offers/{id}/apply` — postuler à une offre
-- [x] `GET /api/mes-candidatures` — mes candidatures (candidat)
-- [x] `DELETE /api/candidatures/{id}` — retirer une candidature
-- [x] `GET /api/job-offers/{id}/candidats` — voir les candidats (employeur)
-- [x] `PUT /api/candidatures/{id}/statut` — changer le statut
-- [x] `GET /api/profil` — mon profil
-- [x] `PUT /api/profil` — modifier mon profil
-- [x] `GET /api/candidats` — liste des candidats (employeur)
-- [x] `GET /api/candidats/{id}` — profil d'un candidat (employeur)
 - [x] `POST /api/job-offers/{id}/save` — sauvegarder une offre
 - [x] `DELETE /api/job-offers/{id}/save` — retirer des sauvegardes
 - [x] `GET /api/offres-sauvegardees` — liste des offres sauvegardées
 
-### Jour 5 — Intégration Build CV Pro ✅
-- [x] `GET /api/buildcvpro/check` — vérifier si email existe sur Build CV Pro
-- [x] `POST /api/buildcvpro/connect` — connecter son compte Build CV Pro
-- [x] `GET /api/buildcvpro/cvs` — récupérer ses CVs depuis Build CV Pro
-- [x] `DELETE /api/buildcvpro/disconnect` — déconnecter Build CV Pro
+### Candidatures ✅
+- [x] `POST /api/job-offers/{id}/apply` — postuler
+- [x] `GET /api/mes-candidatures` — mes candidatures
+- [x] `DELETE /api/candidatures/{id}` — retirer une candidature
+- [x] `GET /api/job-offers/{id}/candidats` — voir les candidats (employeur)
+- [x] `PUT /api/candidatures/{id}/statut` — changer le statut
+
+### Profil ✅
+- [x] `GET /api/profil` — mon profil
+- [x] `PUT /api/profil` — modifier mon profil
+- [x] `GET /api/candidats` — liste des candidats (employeur)
+- [x] `GET /api/candidats/{id}` — profil d'un candidat
+- [x] `POST /api/profil/cv` — uploader un CV PDF
+- [x] `DELETE /api/profil/cv` — supprimer le CV
+- [x] `GET /api/profil/cv` — télécharger le CV
+
+### Messages ✅
+- [x] `GET /api/messages` — liste des conversations
+- [x] `GET /api/messages/{applicationId}` — messages d'une conversation
+- [x] `POST /api/messages/{applicationId}` — envoyer un message
+
+### Intégration Build CV Pro ✅
+- [x] `GET /api/buildcvpro/check` — vérifier si email existe
+- [x] `POST /api/buildcvpro/connect` — connecter son compte
+- [x] `GET /api/buildcvpro/cvs` — récupérer ses CVs
+- [x] `DELETE /api/buildcvpro/disconnect` — déconnecter
 - [x] Détection automatique par email
-- [x] URL Build CV Pro configurable via `.env`
+- [x] URL configurable via `.env`
+
+### Admin ✅
+- [x] `GET /api/admin/stats` — statistiques globales
+- [x] `GET /api/admin/employers` — liste des employeurs
+- [x] `GET /api/admin/employers/pending` — employeurs en attente
+- [x] `POST /api/admin/employers/{id}/validate` — valider un compte
+- [x] `POST /api/admin/employers/{id}/reject` — rejeter un compte
 
 ### Mobile 🔨
+- [ ] App Flutter JobLink
 - [ ] Auth + offres + postuler
 - [ ] Profil + import CV Build CV Pro
-
-### Finition 🔨
-- [ ] Tests end-to-end
-- [ ] Fix bugs critiques
-- [ ] Préparation démo mémoire
 
 ---
 
@@ -92,6 +96,7 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 | Auth | Laravel Sanctum |
 | Google Auth | Laravel Socialite |
 | Base de données | MySQL 8 |
+| Stockage fichiers | Laravel Storage |
 | Frontend | Vue.js (dépôt séparé) |
 | Mobile | Flutter (à venir) |
 
@@ -101,9 +106,9 @@ Ce dépôt contient uniquement le **backend Laravel (API REST)** du projet.
 
 | Rôle | Description |
 |---|---|
-| `candidate` | Parcourir les offres, postuler, gérer son profil |
+| `candidate` | Parcourir les offres, postuler, gérer son profil, uploader son CV |
 | `employer` | Publier des offres, voir les candidatures (nécessite validation admin) |
-| `admin` | Gérer la plateforme, valider les comptes entreprises |
+| `admin` | Gérer la plateforme, valider les comptes entreprises, voir les stats |
 
 ---
 
@@ -133,6 +138,9 @@ DB_PASSWORD=ton_password
 
 # Lancer les migrations
 php artisan migrate
+
+# Créer le lien symbolique pour le stockage
+php artisan storage:link
 
 # Démarrer le serveur
 php artisan serve --port=8001

@@ -1,6 +1,6 @@
 # JobLink Niger — Documentation API
 
-> Version : **v1.0** — Mise à jour : 26 Avril 2026
+> Version : **v2.0** — Mise à jour : 26 Avril 2026
 >
 > ✅ Tous les endpoints documentés ici sont testés et validés.
 
@@ -9,7 +9,7 @@
 ## 🔗 URL de base
 
 ```
-http://localhost:8001/api
+http://127.0.0.1:8001/api
 ```
 
 ---
@@ -19,7 +19,7 @@ http://localhost:8001/api
 | Header | Valeur | Obligatoire |
 |---|---|---|
 | `Accept` | `application/json` | ✅ |
-| `Content-Type` | `application/json` | ✅ (POST/PUT) |
+| `Content-Type` | `application/json` | ✅ (POST/PUT JSON) |
 | `Authorization` | `Bearer {token}` | ✅ (routes protégées) |
 | `X-Source` | `web-memoire` | Recommandé |
 
@@ -45,9 +45,10 @@ http://localhost:8001/api
 
 | Rôle | Symbole | Description |
 |---|---|---|
+| Public | 🌐 | Accessible sans authentification |
 | Candidat | 👤 | Peut postuler, gérer son profil |
 | Employeur | 👔 | Peut publier des offres, voir les candidatures |
-| Public | 🌐 | Accessible sans authentification |
+| Admin | 🔑 | Gère la plateforme |
 
 ---
 
@@ -81,16 +82,11 @@ http://localhost:8001/api
         "avatar": null,
         "role": "candidate",
         "profile": {
-            "id": 1,
-            "user_id": 1,
             "titre_poste": null,
             "bio": null,
-            "telephone": null,
-            "localisation": null,
             "competences": null,
             "cv_path": null,
-            "buildcvpro_token": null,
-            "buildcvpro_email": null
+            "buildcvpro_token": null
         }
     }
 }
@@ -102,24 +98,20 @@ http://localhost:8001/api
     "token": "2|xxxxxxxxxxxxxxxx",
     "user": {
         "id": 2,
-        "name": "Optimus Engineering",
-        "email": "optimus@example.com",
-        "avatar": null,
         "role": "employer",
         "profile": {
-            "id": 1,
             "nom_entreprise": "Optimus Engineering SARL",
             "statut": "pending"
         }
     }
 }
 ```
-> ⚠️ Le compte employeur est créé avec `statut: pending`. Il doit être validé par un admin avant de pouvoir se connecter.
+> ⚠️ Compte employeur créé avec `statut: pending` — validation admin requise.
 
 ---
 
 ### `POST /api/login`
-🌐 **Public** — Se connecter avec email et mot de passe.
+🌐 **Public** — Se connecter.
 
 **Body :**
 ```json
@@ -148,7 +140,7 @@ http://localhost:8001/api
 ---
 
 ### `POST /api/auth/google`
-🌐 **Public** — Connexion ou inscription via Google.
+🌐 **Public** — Connexion via Google.
 
 **Body :**
 ```json
@@ -157,19 +149,16 @@ http://localhost:8001/api
     "role": "candidate"
 }
 ```
-> `role` est optionnel — utilisé uniquement si c'est un nouveau compte.
 
 **Réponse 200 :**
 ```json
 {
     "token": "4|xxxxxxxxxxxxxxxx",
     "user": {
-        "id": 3,
         "name": "Moussa Google",
         "email": "moussa@gmail.com",
         "avatar": "https://lh3.googleusercontent.com/...",
-        "role": "candidate",
-        "profile": { ... }
+        "role": "candidate"
     }
 }
 ```
@@ -177,27 +166,22 @@ http://localhost:8001/api
 ---
 
 ### `POST /api/logout`
-🔒 **Protégé** — Révoque le token actuel.
+🔒 **Protégé** — Révoque le token.
 
-**Réponse 200 :**
 ```json
-{
-    "message": "Déconnecté avec succès."
-}
+{ "message": "Déconnecté avec succès." }
 ```
 
 ---
 
 ### `GET /api/me`
-🔒 **Protégé** — Retourne les informations de l'utilisateur connecté.
+🔒 **Protégé** — Infos de l'utilisateur connecté.
 
-**Réponse 200 :**
 ```json
 {
     "id": 1,
     "name": "Moussa Diallo",
     "email": "moussa@example.com",
-    "avatar": null,
     "role": "candidate",
     "profile": { ... }
 }
@@ -210,71 +194,26 @@ http://localhost:8001/api
 ---
 
 ### `GET /api/job-offers`
-🌐 **Public** — Liste des offres actives avec filtres et pagination (8 par page).
+🌐 **Public** — Liste des offres avec filtres (8 par page).
 
 **Query params :**
 | Param | Type | Description |
 |---|---|---|
-| `query` | string | Recherche par titre ou description |
+| `query` | string | Recherche titre/description |
 | `type_contrat` | string | cdi, cdd, stage, freelance, alternance |
 | `secteur` | string | Secteur d'activité |
 | `localisation` | string | Ville |
-| `sort` | string | `recent` (défaut) ou `company` |
-
-**Réponse 200 :**
-```json
-{
-    "current_page": 1,
-    "data": [
-        {
-            "id": 1,
-            "titre": "Développeur Web Full Stack",
-            "excerpt": "Rejoignez notre équipe tech...",
-            "type_contrat": "cdi",
-            "secteur": "tech",
-            "localisation": "Niamey",
-            "salaire": "150 000 – 200 000 FCFA",
-            "experience": "2 – 4 ans",
-            "competences": ["Laravel", "Vue.js"],
-            "vues": 5,
-            "candidatures_count": 2,
-            "employer": {
-                "nom_entreprise": "Optimus Engineering SARL"
-            }
-        }
-    ],
-    "total": 10,
-    "per_page": 8
-}
-```
+| `sort` | string | `recent` ou `company` |
 
 ---
 
 ### `GET /api/job-offers/{id}`
-🌐 **Public** — Détail d'une offre. Incrémente automatiquement le compteur de vues.
-
-**Réponse 200 :**
-```json
-{
-    "data": {
-        "id": 1,
-        "titre": "Développeur Web Full Stack",
-        "description": "<p>Description complète...</p>",
-        "requirements": ["Bac+3 minimum", "2 ans d'expérience"],
-        "perks": [{ "label": "Salaire compétitif", "desc": "..." }],
-        "type_contrat": "cdi",
-        "localisation": "Niamey",
-        "salaire": "150 000 – 200 000 FCFA",
-        "vues": 6,
-        "employer": { ... }
-    }
-}
-```
+🌐 **Public** — Détail d'une offre. Incrémente les vues.
 
 ---
 
 ### `POST /api/job-offers`
-🔒 **Protégé** | 👔 **Employeur validé uniquement** — Créer une offre.
+🔒 **Protégé** | 👔 **Employeur validé** — Créer une offre.
 
 **Body :**
 ```json
@@ -293,66 +232,30 @@ http://localhost:8001/api
 }
 ```
 
-**Réponse 201 :**
-```json
-{
-    "data": { ... },
-    "message": "Offre créée avec succès !"
-}
-```
-
 ---
 
 ### `PUT /api/job-offers/{id}`
-🔒 **Protégé** | 👔 **Propriétaire uniquement** — Modifier une offre.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Offre mise à jour !"
-}
-```
+🔒 **Protégé** | 👔 **Propriétaire** — Modifier une offre.
 
 ---
 
 ### `DELETE /api/job-offers/{id}`
-🔒 **Protégé** | 👔 **Propriétaire uniquement** — Supprimer une offre.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Offre supprimée !"
-}
-```
+🔒 **Protégé** | 👔 **Propriétaire** — Supprimer une offre.
 
 ---
 
 ### `POST /api/job-offers/{id}/save`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Sauvegarder une offre.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Offre sauvegardée !"
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Sauvegarder une offre.
 
 ---
 
 ### `DELETE /api/job-offers/{id}/save`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Retirer une offre des sauvegardes.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Offre retirée des sauvegardes !"
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Retirer des sauvegardes.
 
 ---
 
 ### `GET /api/offres-sauvegardees`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Liste des offres sauvegardées.
+🔒 **Protégé** | 👤 **Candidat** — Liste des offres sauvegardées.
 
 ---
 
@@ -361,13 +264,13 @@ http://localhost:8001/api
 ---
 
 ### `POST /api/job-offers/{id}/apply`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Postuler à une offre.
+🔒 **Protégé** | 👤 **Candidat** — Postuler à une offre.
 
 **Body :**
 ```json
 {
-    "message": "Je suis très intéressé par ce poste...",
-    "cv_path": "cv/mon-cv.pdf",
+    "message": "Je suis très intéressé...",
+    "cv_path": "cvs/mon-cv.pdf",
     "buildcvpro_cv_id": "9"
 }
 ```
@@ -378,8 +281,6 @@ http://localhost:8001/api
 {
     "data": {
         "id": 1,
-        "candidate_id": 1,
-        "job_offer_id": 2,
         "status": "pending",
         "message": "Je suis très intéressé..."
     },
@@ -387,17 +288,10 @@ http://localhost:8001/api
 }
 ```
 
-**Réponse 409 — Déjà postulé :**
-```json
-{
-    "message": "Vous avez déjà postulé à cette offre."
-}
-```
-
 ---
 
 ### `GET /api/mes-candidatures`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Liste de mes candidatures.
+🔒 **Protégé** | 👤 **Candidat** — Mes candidatures.
 
 **Réponse 200 :**
 ```json
@@ -407,12 +301,8 @@ http://localhost:8001/api
             "id": 1,
             "status": "pending",
             "date": "26 Apr 2026",
-            "message": "Je suis très intéressé...",
             "job": {
-                "id": 2,
                 "titre": "Développeur Web Full Stack",
-                "type_contrat": "cdi",
-                "localisation": "Niamey",
                 "entreprise": "Optimus Engineering SARL"
             }
         }
@@ -423,21 +313,12 @@ http://localhost:8001/api
 ---
 
 ### `DELETE /api/candidatures/{id}`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Retirer une candidature.
-
-> ⚠️ Possible uniquement si statut = `pending`.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Candidature retirée."
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Retirer une candidature (statut `pending` uniquement).
 
 ---
 
 ### `GET /api/job-offers/{id}/candidats`
-🔒 **Protégé** | 👔 **Employeur propriétaire uniquement** — Voir les candidats d'une offre.
+🔒 **Protégé** | 👔 **Employeur propriétaire** — Voir les candidats.
 
 **Réponse 200 :**
 ```json
@@ -446,14 +327,9 @@ http://localhost:8001/api
         {
             "id": 1,
             "status": "pending",
-            "date": "26 Apr 2026",
-            "message": "...",
             "candidat": {
-                "id": 1,
                 "name": "Moussa Diallo",
-                "email": "moussa@example.com",
                 "titre_poste": "Développeur Web",
-                "localisation": "Niamey",
                 "competences": ["Laravel", "Vue.js"]
             }
         }
@@ -464,22 +340,13 @@ http://localhost:8001/api
 ---
 
 ### `PUT /api/candidatures/{id}/statut`
-🔒 **Protégé** | 👔 **Employeur uniquement** — Changer le statut d'une candidature.
+🔒 **Protégé** | 👔 **Employeur** — Changer le statut.
 
 **Body :**
 ```json
-{
-    "status": "interview"
-}
+{ "status": "interview" }
 ```
-> `status` accepte : `pending`, `interview`, `accepted`, `rejected`
-
-**Réponse 200 :**
-```json
-{
-    "message": "Statut mis à jour !"
-}
-```
+> Accepte : `pending`, `interview`, `accepted`, `rejected`
 
 ---
 
@@ -495,7 +362,6 @@ http://localhost:8001/api
 {
     "id": 1,
     "name": "Moussa Diallo",
-    "email": "moussa@example.com",
     "role": "candidate",
     "titre_poste": "Développeur Web",
     "bio": "Passionné par le développement...",
@@ -514,45 +380,153 @@ http://localhost:8001/api
 **Body (candidat) :**
 ```json
 {
-    "name": "Moussa Diallo",
     "titre_poste": "Développeur Web",
     "bio": "Passionné par le développement...",
     "telephone": "+227 96 12 34 56",
     "localisation": "Niamey",
-    "competences": ["Laravel", "Vue.js", "MySQL"]
+    "competences": ["Laravel", "Vue.js"]
 }
 ```
 
-**Réponse 200 :**
+---
+
+### `POST /api/profil/cv`
+🔒 **Protégé** | 👤 **Candidat** — Uploader un CV PDF.
+
+> ⚠️ Envoyer en `multipart/form-data` pas en JSON !
+
+**Form Data :**
+```
+cv → fichier PDF (max 5MB)
+```
+
+**Réponse 201 :**
 ```json
 {
-    "message": "Profil mis à jour !"
+    "message": "CV uploadé avec succès !",
+    "cv_path": "cvs/xxxxxxxx.pdf",
+    "cv_url": "http://127.0.0.1:8001/storage/cvs/xxxxxxxx.pdf"
+}
+```
+
+**Exemple curl :**
+```bash
+curl -X POST http://127.0.0.1:8001/api/profil/cv \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Accept: application/json" \
+  -F "cv=@/chemin/vers/cv.pdf"
+```
+
+---
+
+### `DELETE /api/profil/cv`
+🔒 **Protégé** | 👤 **Candidat** — Supprimer le CV.
+
+```json
+{ "message": "CV supprimé avec succès !" }
+```
+
+---
+
+### `GET /api/profil/cv`
+🔒 **Protégé** | 👤 **Candidat** — URL de téléchargement du CV.
+
+```json
+{
+    "cv_url": "http://127.0.0.1:8001/storage/cvs/xxxxxxxx.pdf"
 }
 ```
 
 ---
 
 ### `GET /api/candidats`
-🔒 **Protégé** | 👔 **Employeur uniquement** — Liste des profils candidats (12 par page).
+🔒 **Protégé** | 👔 **Employeur** — Liste des candidats (12 par page).
 
 ---
 
 ### `GET /api/candidats/{id}`
-🔒 **Protégé** | 👔 **Employeur uniquement** — Profil d'un candidat.
+🔒 **Protégé** | 👔 **Employeur** — Profil d'un candidat.
+
+---
+
+## 💬 MESSAGES
+
+---
+
+### `GET /api/messages`
+🔒 **Protégé** — Liste des conversations.
+
+**Réponse 200 — Candidat :**
+```json
+{
+    "data": [
+        {
+            "application_id": 2,
+            "job": {
+                "id": 2,
+                "titre": "Développeur Web Full Stack"
+            },
+            "entreprise": {
+                "id": 1,
+                "nom": "Optimus Engineering SARL"
+            },
+            "dernier_message": "Bonjour, je suis très motivé...",
+            "unread": 1
+        }
+    ]
+}
+```
+
+---
+
+### `GET /api/messages/{applicationId}`
+🔒 **Protégé** — Messages d'une conversation. Marque automatiquement les messages comme lus.
 
 **Réponse 200 :**
 ```json
 {
+    "data": [
+        {
+            "id": 1,
+            "content": "Bonjour, je suis très motivé !",
+            "from_me": true,
+            "read": true,
+            "created_at": "10:00"
+        },
+        {
+            "id": 2,
+            "content": "Merci, nous voudrions vous rencontrer.",
+            "from_me": false,
+            "read": true,
+            "created_at": "10:07"
+        }
+    ]
+}
+```
+
+---
+
+### `POST /api/messages/{applicationId}`
+🔒 **Protégé** — Envoyer un message.
+
+**Body :**
+```json
+{
+    "content": "Bonjour, je suis très motivé pour rejoindre votre équipe !"
+}
+```
+
+**Réponse 201 :**
+```json
+{
     "data": {
         "id": 1,
-        "name": "Moussa Diallo",
-        "email": "moussa@example.com",
-        "titre_poste": "Développeur Web",
-        "bio": "Passionné par le développement...",
-        "localisation": "Niamey",
-        "competences": ["Laravel", "Vue.js"],
-        "telephone": "+227 96 12 34 56"
-    }
+        "content": "Bonjour...",
+        "from_me": true,
+        "read": false,
+        "created_at": "10:00"
+    },
+    "message": "Message envoyé !"
 }
 ```
 
@@ -563,32 +537,24 @@ http://localhost:8001/api
 ---
 
 ### `GET /api/buildcvpro/check`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Vérifie si l'email du candidat connecté existe sur Build CV Pro.
+🔒 **Protégé** | 👤 **Candidat** — Vérifie si l'email existe sur Build CV Pro.
 
-**Réponse 200 — Email trouvé :**
+**Réponse 200 :**
 ```json
 {
     "exists": true,
     "user": {
         "id": 7,
         "name": "Moussa Diallo",
-        "email": "moussa@test.com",
-        "avatar": null
+        "email": "moussa@test.com"
     }
-}
-```
-
-**Réponse 200 — Email non trouvé :**
-```json
-{
-    "exists": false
 }
 ```
 
 ---
 
 ### `POST /api/buildcvpro/connect`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Connecter son compte Build CV Pro.
+🔒 **Protégé** | 👤 **Candidat** — Connecter son compte Build CV Pro.
 
 **Body :**
 ```json
@@ -606,17 +572,10 @@ http://localhost:8001/api
 }
 ```
 
-**Réponse 401 — Mauvais identifiants :**
-```json
-{
-    "message": "Identifiants BuildCVPro invalides."
-}
-```
-
 ---
 
 ### `GET /api/buildcvpro/cvs`
-🔒 **Protégé** | 👤 **Candidat connecté à Build CV Pro** — Récupérer ses CVs.
+🔒 **Protégé** | 👤 **Candidat connecté** — Récupérer ses CVs.
 
 **Réponse 200 :**
 ```json
@@ -626,10 +585,7 @@ http://localhost:8001/api
             "id": 9,
             "title": "Mon premier CV",
             "template": "classic",
-            "is_public": false,
-            "share_url": null,
-            "created_at": "2026-04-25",
-            "updated_at": "2026-04-25"
+            "created_at": "2026-04-25"
         }
     ]
 }
@@ -638,13 +594,72 @@ http://localhost:8001/api
 ---
 
 ### `DELETE /api/buildcvpro/disconnect`
-🔒 **Protégé** | 👤 **Candidat uniquement** — Déconnecter son compte Build CV Pro.
+🔒 **Protégé** | 👤 **Candidat** — Déconnecter Build CV Pro.
+
+```json
+{ "message": "Compte BuildCVPro déconnecté." }
+```
+
+---
+
+## 🔑 ADMIN
+
+---
+
+### `GET /api/admin/stats`
+🔒 **Protégé** | 🔑 **Admin** — Statistiques globales.
 
 **Réponse 200 :**
 ```json
 {
-    "message": "Compte BuildCVPro déconnecté."
+    "data": {
+        "total_users": 5,
+        "total_candidats": 3,
+        "total_employeurs": 1,
+        "employeurs_pending": 0,
+        "employeurs_actifs": 1,
+        "total_offres": 1,
+        "offres_actives": 1,
+        "total_candidatures": 2
+    }
 }
+```
+
+---
+
+### `GET /api/admin/employers`
+🔒 **Protégé** | 🔑 **Admin** — Liste de tous les employeurs (15 par page).
+
+---
+
+### `GET /api/admin/employers/pending`
+🔒 **Protégé** | 🔑 **Admin** — Employeurs en attente de validation.
+
+---
+
+### `POST /api/admin/employers/{id}/validate`
+🔒 **Protégé** | 🔑 **Admin** — Valider un compte employeur.
+
+**Réponse 200 :**
+```json
+{ "message": "Compte employeur validé avec succès !" }
+```
+
+---
+
+### `POST /api/admin/employers/{id}/reject`
+🔒 **Protégé** | 🔑 **Admin** — Rejeter un compte employeur.
+
+**Body :**
+```json
+{
+    "raison": "Documents incomplets et informations non vérifiables."
+}
+```
+
+**Réponse 200 :**
+```json
+{ "message": "Compte employeur rejeté." }
 ```
 
 ---
@@ -662,12 +677,16 @@ http://localhost:8001/api
 
 ## 🔒 Permissions par rôle
 
-| Action | 🌐 Public | 👤 Candidat | 👔 Employeur |
-|---|---|---|---|
-| Voir les offres | ✅ | ✅ | ✅ |
-| Postuler | ❌ | ✅ | ❌ |
-| Sauvegarder une offre | ❌ | ✅ | ❌ |
-| Publier une offre | ❌ | ❌ | ✅ |
-| Voir les candidatures | ❌ | Les siennes | ✅ |
-| Voir les profils candidats | ❌ | ❌ | ✅ |
-| Connecter Build CV Pro | ❌ | ✅ | ❌ |
+| Action | 🌐 Public | 👤 Candidat | 👔 Employeur | 🔑 Admin |
+|---|---|---|---|---|
+| Voir les offres | ✅ | ✅ | ✅ | ✅ |
+| Postuler | ❌ | ✅ | ❌ | ❌ |
+| Sauvegarder une offre | ❌ | ✅ | ❌ | ❌ |
+| Uploader un CV | ❌ | ✅ | ❌ | ❌ |
+| Connecter Build CV Pro | ❌ | ✅ | ❌ | ❌ |
+| Publier une offre | ❌ | ❌ | ✅ | ✅ |
+| Voir les candidatures | ❌ | Les siennes | ✅ | ✅ |
+| Voir les profils candidats | ❌ | ❌ | ✅ | ✅ |
+| Envoyer des messages | ❌ | ✅ | ✅ | ❌ |
+| Valider un employeur | ❌ | ❌ | ❌ | ✅ |
+| Voir les stats | ❌ | ❌ | ❌ | ✅ |
