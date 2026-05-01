@@ -1,6 +1,6 @@
 # JobLink Niger — Documentation API
 
-> Version : **v3.0** — Mise à jour : 01 Mai 2026
+> Version : **v4.0** — Mise à jour : 01 Mai 2026
 >
 > ✅ Tous les endpoints documentés ici sont testés et validés.
 
@@ -312,6 +312,95 @@ http://127.0.0.1:8001/api
 
 ---
 
+## 🏢 ENTREPRISES
+
+---
+
+### `GET /api/entreprises`
+🌐 **Public** — Liste paginée des entreprises validées (12 par page).
+
+> Seules les entreprises avec `statut: active` sont retournées.
+
+**Query params :**
+| Param | Type | Description |
+|---|---|---|
+| `search` | string | Recherche par nom ou secteur |
+| `secteur` | string | Filtrer par secteur d'activité |
+| `ville` | string | Filtrer par ville |
+| `per_page` | integer | Nombre de résultats par page (défaut : 12) |
+
+**Réponse 200 :**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id": 1,
+            "nom_entreprise": "Optimus Engineering SARL",
+            "type_entreprise": "SARL",
+            "secteur": "tech",
+            "description": "Entreprise spécialisée en développement logiciel.",
+            "logo": null,
+            "ville": "Niamey",
+            "pays": "Niger",
+            "site_web": "https://optimus.ne",
+            "annee_creation": 2018,
+            "nombre_employes": "50-100",
+            "offres_actives": 3
+        }
+    ],
+    "per_page": 12,
+    "total": 5
+}
+```
+
+---
+
+### `GET /api/entreprises/{id}`
+🌐 **Public** — Détail complet d'une entreprise avec ses offres actives.
+
+> Seules les entreprises avec `statut: active` sont accessibles. Les informations sensibles (`responsable_nom`, `responsable_email`, `numero_identification`, `raison_rejet`) ne sont pas exposées.
+
+**Réponse 200 :**
+```json
+{
+    "data": {
+        "id": 1,
+        "nom_entreprise": "Optimus Engineering SARL",
+        "type_entreprise": "SARL",
+        "secteur": "tech",
+        "description": "Entreprise spécialisée en développement logiciel.",
+        "logo": null,
+        "ville": "Niamey",
+        "pays": "Niger",
+        "adresse": "Avenue de la République",
+        "email_contact": "contact@optimus.ne",
+        "telephone": "+227 20 00 00 00",
+        "site_web": "https://optimus.ne",
+        "annee_creation": 2018,
+        "nombre_employes": "50-100",
+        "offres": [
+            {
+                "id": 1,
+                "titre": "Développeur Web Full Stack",
+                "type_contrat": "cdi",
+                "localisation": "Niamey",
+                "created_at": "2026-04-26T10:00:00.000000Z"
+            }
+        ]
+    }
+}
+```
+
+**Réponse 404 — Introuvable ou non validée :**
+```json
+{
+    "message": "Entreprise introuvable."
+}
+```
+
+---
+
 ## 📝 CANDIDATURES
 
 ---
@@ -523,9 +612,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-## 🎓 EXPÉRIENCES & FORMATIONS DU CANDIDAT *(nouveau v3.0)*
-
-> Ces endpoints remplacent le stockage local côté frontend. Toutes les expériences et formations sont désormais persistées en base de données.
+## 🎓 EXPÉRIENCES & FORMATIONS DU CANDIDAT
 
 ---
 
@@ -608,7 +695,7 @@ cv → fichier PDF (max 5MB)
 ### `PUT /api/candidat/experiences/{id}`
 🔒 **Protégé** | 👤 **Candidat propriétaire** — Modifier une expérience.
 
-> Seuls les champs envoyés sont mis à jour (`sometimes`). Pas besoin de tout renvoyer.
+> Seuls les champs envoyés sont mis à jour. Pas besoin de tout renvoyer.
 
 **Body (exemple partiel) :**
 ```json
@@ -627,7 +714,7 @@ cv → fichier PDF (max 5MB)
 }
 ```
 
-**Réponse 404 — Introuvable ou n'appartient pas au candidat :**
+**Réponse 404 :**
 ```json
 {
     "message": "Expérience introuvable."
@@ -768,7 +855,7 @@ cv → fichier PDF (max 5MB)
 ### `GET /api/messages`
 🔒 **Protégé** — Liste des conversations.
 
-**Réponse 200 — Candidat :**
+**Réponse 200 :**
 ```json
 {
     "data": [
@@ -942,7 +1029,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `GET /api/buildcvpro/cvs/{id}` *(nouveau v3.0)*
+### `GET /api/buildcvpro/cvs/{id}`
 🔒 **Protégé** | 👤 **Candidat connecté** — Récupérer les détails complets d'un CV BuildCVPro ainsi que son `share_url` pour la prévisualisation.
 
 > Le `share_url` retourné peut être utilisé directement dans un `<iframe>` ou ouvert dans un nouvel onglet pour la preview. Le téléchargement est géré côté frontend via `window.print()`.
@@ -1080,7 +1167,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `GET /api/admin/users` *(nouveau v3.0)*
+### `GET /api/admin/users`
 🔒 **Protégé** | 🔑 **Admin** — Liste paginée de tous les utilisateurs avec filtres.
 
 **Query params :**
@@ -1112,7 +1199,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `GET /api/admin/users/{id}` *(nouveau v3.0)*
+### `GET /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Voir le détail d'un utilisateur.
 
 **Réponse 200 :**
@@ -1138,7 +1225,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `POST /api/admin/users` *(nouveau v3.0)*
+### `POST /api/admin/users`
 🔒 **Protégé** | 🔑 **Admin** — Créer un utilisateur avec n'importe quel rôle, y compris `admin`.
 
 > C'est le **seul moyen** de créer un compte admin. Le `POST /api/register` public ne l'autorise pas.
@@ -1186,7 +1273,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `PUT /api/admin/users/{id}` *(nouveau v3.0)*
+### `PUT /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Modifier un utilisateur.
 
 > Seuls les champs envoyés sont mis à jour. Le mot de passe est optionnel.
@@ -1218,7 +1305,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `DELETE /api/admin/users/{id}` *(nouveau v3.0)*
+### `DELETE /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Supprimer un utilisateur définitivement.
 
 > ⚠️ Un admin ne peut pas supprimer son propre compte.
@@ -1246,7 +1333,7 @@ cv → fichier PDF (max 5MB)
 
 ---
 
-### `PATCH /api/admin/users/{id}/toggle-status` *(nouveau v3.0)*
+### `PATCH /api/admin/users/{id}/toggle-status`
 🔒 **Protégé** | 🔑 **Admin** — Activer ou désactiver un compte utilisateur. Bascule automatiquement entre `true` et `false`.
 
 > ⚠️ Un admin ne peut pas désactiver son propre compte.
@@ -1300,6 +1387,7 @@ cv → fichier PDF (max 5MB)
 | Action | 🌐 Public | 👤 Candidat | 👔 Employeur | 🔑 Admin |
 |---|---|---|---|---|
 | Voir les offres | ✅ | ✅ | ✅ | ✅ |
+| Voir les entreprises | ✅ | ✅ | ✅ | ✅ |
 | Postuler | ❌ | ✅ | ❌ | ❌ |
 | Sauvegarder une offre | ❌ | ✅ | ❌ | ❌ |
 | Uploader un CV | ❌ | ✅ | ❌ | ❌ |
@@ -1322,3 +1410,4 @@ cv → fichier PDF (max 5MB)
 | v1.0 | Déc 2025 | Version initiale |
 | v2.0 | 26 Avr 2026 | Ajout messages, BuildCVPro, CV upload |
 | v3.0 | 01 Mai 2026 | Ajout gestion utilisateurs admin, expériences & formations candidat, preview CV BuildCVPro |
+| v4.0 | 01 Mai 2026 | Ajout endpoints publics entreprises (liste + détail avec offres actives) |

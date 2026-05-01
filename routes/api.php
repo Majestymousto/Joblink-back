@@ -10,15 +10,20 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\CvController;
 use App\Http\Controllers\Api\CandidateProfileController;
+use App\Http\Controllers\Api\EntrepriseController;
 
 // Routes publiques
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/register',    [AuthController::class, 'register']);
+Route::post('/login',       [AuthController::class, 'login']);
 Route::post('/auth/google', [AuthController::class, 'googleAuth']);
 
 // Offres publiques
 Route::get('/job-offers',      [JobOfferController::class, 'index']);
 Route::get('/job-offers/{id}', [JobOfferController::class, 'show']);
+
+// Entreprises publiques
+Route::get('/entreprises',      [EntrepriseController::class, 'index']);
+Route::get('/entreprises/{id}', [EntrepriseController::class, 'show']);
 
 // Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
@@ -28,13 +33,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me',      [AuthController::class, 'me']);
 
     // Profil
-    Route::get('/profil',  [ProfileController::class, 'show']);
-    Route::put('/profil',  [ProfileController::class, 'update']);
+    Route::get('/profil', [ProfileController::class, 'show']);
+    Route::put('/profil', [ProfileController::class, 'update']);
 
     // Offres — Entreprise
-    Route::post('/job-offers',         [JobOfferController::class, 'store']);
-    Route::put('/job-offers/{id}',     [JobOfferController::class, 'update']);
-    Route::delete('/job-offers/{id}',  [JobOfferController::class, 'destroy']);
+    Route::post('/job-offers',        [JobOfferController::class, 'store']);
+    Route::put('/job-offers/{id}',    [JobOfferController::class, 'update']);
+    Route::delete('/job-offers/{id}', [JobOfferController::class, 'destroy']);
+
+    // Offres sauvegardées
+    Route::post('/job-offers/{id}/save',   [JobOfferController::class, 'save']);
+    Route::delete('/job-offers/{id}/save', [JobOfferController::class, 'unsave']);
+    Route::get('/offres-sauvegardees',     [JobOfferController::class, 'savedJobs']);
 
     // Candidatures — Candidat
     Route::post('/job-offers/{id}/apply', [ApplicationController::class, 'apply']);
@@ -42,8 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/candidatures/{id}',   [ApplicationController::class, 'withdraw']);
 
     // Candidatures — Entreprise
-    Route::get('/job-offers/{id}/candidats',  [ApplicationController::class, 'jobCandidates']);
-    Route::put('/candidatures/{id}/statut',   [ApplicationController::class, 'updateStatus']);
+    Route::get('/job-offers/{id}/candidats', [ApplicationController::class, 'jobCandidates']);
+    Route::put('/candidatures/{id}/statut',  [ApplicationController::class, 'updateStatus']);
 
     // Candidats — Entreprise
     Route::get('/candidats',      [ProfileController::class, 'candidates']);
@@ -52,53 +62,46 @@ Route::middleware('auth:sanctum')->group(function () {
     // BuildCVPro
     Route::post('/buildcvpro/connect',      [BuildCVProController::class, 'connect']);
     Route::get('/buildcvpro/cvs',           [BuildCVProController::class, 'getCvs']);
+    Route::get('/buildcvpro/cvs/{id}',      [BuildCVProController::class, 'showCv']);
     Route::delete('/buildcvpro/disconnect', [BuildCVProController::class, 'disconnect']);
     Route::get('/buildcvpro/check',         [BuildCVProController::class, 'check']);
 
-    // Offres sauvegardées
-    Route::post('/job-offers/{id}/save',   [JobOfferController::class, 'save']);
-    Route::delete('/job-offers/{id}/save', [JobOfferController::class, 'unsave']);
-    Route::get('/offres-sauvegardees',     [JobOfferController::class, 'savedJobs']);
+    // CV Upload
+    Route::post('/profil/cv',   [CvController::class, 'upload']);
+    Route::delete('/profil/cv', [CvController::class, 'delete']);
+    Route::get('/profil/cv',    [CvController::class, 'download']);
 
     // Messages
     Route::get('/messages',                  [MessageController::class, 'index']);
     Route::get('/messages/{applicationId}',  [MessageController::class, 'show']);
     Route::post('/messages/{applicationId}', [MessageController::class, 'send']);
 
-    // CV Upload
-    Route::post('/profil/cv',    [CvController::class, 'upload']);
-    Route::delete('/profil/cv',  [CvController::class, 'delete']);
-    Route::get('/profil/cv',     [CvController::class, 'download']);
-
-    Route::get('/buildcvpro/cvs',        [BuildCVProController::class, 'getCvs']);
-    Route::get('/buildcvpro/cvs/{id}',   [BuildCVProController::class, 'showCv']); // ✅ nouveau
-
     // Expériences & Formations — Candidat
-    Route::get('/candidat/experiences',        [CandidateProfileController::class, 'indexExperiences']);
-    Route::post('/candidat/experiences',       [CandidateProfileController::class, 'storeExperience']);
-    Route::put('/candidat/experiences/{id}',   [CandidateProfileController::class, 'updateExperience']);
-    Route::delete('/candidat/experiences/{id}',[CandidateProfileController::class, 'destroyExperience']);
+    Route::get('/candidat/experiences',         [CandidateProfileController::class, 'indexExperiences']);
+    Route::post('/candidat/experiences',        [CandidateProfileController::class, 'storeExperience']);
+    Route::put('/candidat/experiences/{id}',    [CandidateProfileController::class, 'updateExperience']);
+    Route::delete('/candidat/experiences/{id}', [CandidateProfileController::class, 'destroyExperience']);
 
-    Route::get('/candidat/formations',         [CandidateProfileController::class, 'indexFormations']);
-    Route::post('/candidat/formations',        [CandidateProfileController::class, 'storeFormation']);
-    Route::put('/candidat/formations/{id}',    [CandidateProfileController::class, 'updateFormation']);
-    Route::delete('/candidat/formations/{id}', [CandidateProfileController::class, 'destroyFormation']);
+    Route::get('/candidat/formations',          [CandidateProfileController::class, 'indexFormations']);
+    Route::post('/candidat/formations',         [CandidateProfileController::class, 'storeFormation']);
+    Route::put('/candidat/formations/{id}',     [CandidateProfileController::class, 'updateFormation']);
+    Route::delete('/candidat/formations/{id}',  [CandidateProfileController::class, 'destroyFormation']);
 
     // Admin
     Route::prefix('admin')->group(function () {
+        Route::get('/stats',                    [AdminController::class, 'stats']);
         Route::get('/employers/pending',        [AdminController::class, 'pendingEmployers']);
         Route::get('/employers',                [AdminController::class, 'allEmployers']);
         Route::post('/employers/{id}/validate', [AdminController::class, 'validateEmployer']);
         Route::post('/employers/{id}/reject',   [AdminController::class, 'rejectEmployer']);
-        Route::get('/stats',                    [AdminController::class, 'stats']);
 
-         // ✅ Nouvelles routes — Gestion des utilisateurs
-    Route::get('/users',                        [AdminController::class, 'allUsers']);
-    Route::get('/users/{id}',                   [AdminController::class, 'showUser']);
-    Route::post('/users',                       [AdminController::class, 'createUser']);
-    Route::put('/users/{id}',                   [AdminController::class, 'updateUser']);
-    Route::delete('/users/{id}',                [AdminController::class, 'deleteUser']);
-    Route::patch('/users/{id}/toggle-status',   [AdminController::class, 'toggleUserStatus']);
+        // Gestion des utilisateurs
+        Route::get('/users',                      [AdminController::class, 'allUsers']);
+        Route::get('/users/{id}',                 [AdminController::class, 'showUser']);
+        Route::post('/users',                     [AdminController::class, 'createUser']);
+        Route::put('/users/{id}',                 [AdminController::class, 'updateUser']);
+        Route::delete('/users/{id}',              [AdminController::class, 'deleteUser']);
+        Route::patch('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
     });
 
 });
