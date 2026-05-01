@@ -40,4 +40,14 @@ class Candidate extends Model
     {
         return $this->hasMany(SavedJob::class);
     }
+
+    public function experiences()
+{
+    return $this->hasMany(Experience::class)->latest();
+}
+
+public function formations()
+{
+    return $this->hasMany(Formation::class)->latest();
+}
 }

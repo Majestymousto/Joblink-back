@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\BuildCVProController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\CvController;
+use App\Http\Controllers\Api\CandidateProfileController;
 
 // Routes publiques
 Route::post('/register', [AuthController::class, 'register']);
@@ -69,6 +70,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/profil/cv',  [CvController::class, 'delete']);
     Route::get('/profil/cv',     [CvController::class, 'download']);
 
+    Route::get('/buildcvpro/cvs',        [BuildCVProController::class, 'getCvs']);
+    Route::get('/buildcvpro/cvs/{id}',   [BuildCVProController::class, 'showCv']); // ✅ nouveau
+
+    // Expériences & Formations — Candidat
+    Route::get('/candidat/experiences',        [CandidateProfileController::class, 'indexExperiences']);
+    Route::post('/candidat/experiences',       [CandidateProfileController::class, 'storeExperience']);
+    Route::put('/candidat/experiences/{id}',   [CandidateProfileController::class, 'updateExperience']);
+    Route::delete('/candidat/experiences/{id}',[CandidateProfileController::class, 'destroyExperience']);
+
+    Route::get('/candidat/formations',         [CandidateProfileController::class, 'indexFormations']);
+    Route::post('/candidat/formations',        [CandidateProfileController::class, 'storeFormation']);
+    Route::put('/candidat/formations/{id}',    [CandidateProfileController::class, 'updateFormation']);
+    Route::delete('/candidat/formations/{id}', [CandidateProfileController::class, 'destroyFormation']);
+
     // Admin
     Route::prefix('admin')->group(function () {
         Route::get('/employers/pending',        [AdminController::class, 'pendingEmployers']);
@@ -76,6 +91,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/employers/{id}/validate', [AdminController::class, 'validateEmployer']);
         Route::post('/employers/{id}/reject',   [AdminController::class, 'rejectEmployer']);
         Route::get('/stats',                    [AdminController::class, 'stats']);
+
+         // ✅ Nouvelles routes — Gestion des utilisateurs
+    Route::get('/users',                        [AdminController::class, 'allUsers']);
+    Route::get('/users/{id}',                   [AdminController::class, 'showUser']);
+    Route::post('/users',                       [AdminController::class, 'createUser']);
+    Route::put('/users/{id}',                   [AdminController::class, 'updateUser']);
+    Route::delete('/users/{id}',                [AdminController::class, 'deleteUser']);
+    Route::patch('/users/{id}/toggle-status',   [AdminController::class, 'toggleUserStatus']);
     });
 
 });

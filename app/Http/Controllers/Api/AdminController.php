@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Employer;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
@@ -150,4 +152,157 @@ public function rejectEmployer(Request $request, $id)
             ],
         ]);
     }
+
+    // GET /api/admin/users
+public function allUsers(Request $request)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    $users = User::query()
+        ->when($request->search, fn($q) => $q
+            ->where('name', 'like', "%{$request->search}%")
+            ->orWhere('email', 'like', "%{$request->search}%"))
+        ->when($request->role, fn($q) => $q->where('role', $request->role))
+        ->when($request->status, fn($q) => $q->where('is_active', $request->status === 'active'))
+        ->latest()
+        ->paginate($request->per_page ?? 15)
+        ->through(fn($u) => [
+            'id'         => $u->id,
+            'name'       => $u->name,
+            'email'      => $u->email,
+            'role'       => $u->role,
+            'is_active'  => $u->is_active,
+            'created_at' => $u->created_at->format('d M Y'),
+        ]);
+
+    return response()->json($users);
+}
+
+// GET /api/admin/users/{id}
+public function showUser(Request $request, $id)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    }
+
+    return response()->json(['data' => [
+        'id'         => $user->id,
+        'name'       => $user->name,
+        'email'      => $user->email,
+        'role'       => $user->role,
+        'is_active'  => $user->is_active,
+        'created_at' => $user->created_at->format('d M Y'),
+    ]]);
+}
+
+// POST /api/admin/users
+public function createUser(Request $request)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    $data = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email',
+        'password' => ['required', Password::min(8)->mixedCase()->numbers()],
+        'role'     => 'required|in:admin,employer,candidate',
+    ]);
+
+    $user = User::create([
+        'name'      => $data['name'],
+        'email'     => $data['email'],
+        'password'  => Hash::make($data['password']),
+        'role'      => $data['role'],
+        'is_active' => true,
+    ]);
+
+    return response()->json([
+        'message' => 'Utilisateur créé avec succès.',
+        'data'    => $user,
+    ], 201);
+}
+
+// PUT /api/admin/users/{id}
+public function updateUser(Request $request, $id)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    }
+
+    $data = $request->validate([
+        'name'     => 'sometimes|string|max:255',
+        'email'    => "sometimes|email|unique:users,email,{$id}",
+        'password' => ['sometimes', Password::min(8)->mixedCase()->numbers()],
+        'role'     => 'sometimes|in:admin,employer,candidate',
+    ]);
+
+    if (isset($data['password'])) {
+        $data['password'] = Hash::make($data['password']);
+    }
+
+    $user->update($data);
+
+    return response()->json([
+        'message' => 'Utilisateur mis à jour avec succès.',
+        'data'    => $user,
+    ]);
+}
+
+// DELETE /api/admin/users/{id}
+public function deleteUser(Request $request, $id)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    if ((int)$id === $request->user()->id) {
+        return response()->json(['message' => 'Vous ne pouvez pas supprimer votre propre compte.'], 403);
+    }
+
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    }
+
+    $user->delete();
+
+    return response()->json(['message' => 'Utilisateur supprimé avec succès.']);
+}
+
+// PATCH /api/admin/users/{id}/toggle-status
+public function toggleUserStatus(Request $request, $id)
+{
+    $check = $this->checkAdmin($request);
+    if ($check) return $check;
+
+    if ((int)$id === $request->user()->id) {
+        return response()->json(['message' => 'Vous ne pouvez pas désactiver votre propre compte.'], 403);
+    }
+
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    }
+
+    $user->update(['is_active' => !$user->is_active]);
+
+    $statut = $user->is_active ? 'activé' : 'désactivé';
+
+    return response()->json([
+        'message' => "Compte {$statut} avec succès.",
+        'data'    => $user,
+    ]);
+}
 }
