@@ -19,9 +19,9 @@ class AdminSeeder extends Seeder
 
         // ajouter tes informations pour te connecter @Oumar
         User::firstOrCreate([
-            'name'      => 'Admin Secondaire',
-            'email'     => 'admin2@example.com',
-            'password'  => 'Password1',
+            'name'      => 'Oumar Farouk Habibou',
+            'email'     => 'habiboufaroukoumar@gmail.com',
+            'password'  => 'Yerima070802',
             'role'      => 'admin',
             'is_active' => true,
         ]);
