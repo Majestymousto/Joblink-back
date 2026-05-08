@@ -11,7 +11,7 @@ class AdminSeeder extends Seeder
     {
         User::firstOrCreate([
             'name'      => 'Seydou Hamadou Moustapha',
-            'email'     => 'seydmoustomhd80@gmail.com',
+            'email'     => 'seydmoustomhd82@gmail.com',
             'password'  => '12345678',
             'role'      => 'admin',
             'is_active' => true,

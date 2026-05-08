@@ -305,4 +305,63 @@ public function toggleUserStatus(Request $request, $id)
         'data'    => $user,
     ]);
 }
+
+public function statsWeekly(Request $request)
+{
+    $periode = in_array($request->get('periode'), [4, 8, 12, 24]) 
+        ? (int) $request->get('periode') 
+        : 4;
+
+    $semaines = [];
+
+    for ($i = $periode - 1; $i >= 0; $i--) {
+        $debut = now()->startOfWeek()->subWeeks($i);
+        $fin   = (clone $debut)->endOfWeek();
+
+        $semaines[] = [
+            'semaine'       => $debut->format('d M'),
+            'inscriptions'  => \App\Models\User::whereBetween('created_at', [$debut, $fin])->count(),
+            'offres'        => \App\Models\JobOffer::whereBetween('created_at', [$debut, $fin])->count(),
+            'candidatures'  => \App\Models\Application::whereBetween('created_at', [$debut, $fin])->count(),
+        ];
+    }
+
+    return response()->json([
+        'periode' => $periode,
+        'data'    => $semaines,
+    ]);
+}
+public function statsRegion(Request $request)
+{
+    $type = $request->query('type'); // null = tout retourner
+
+    $data = [];
+
+    if (!$type || $type === 'candidats') {
+        $data['candidats'] = \App\Models\Candidate::select('localisation', \DB::raw('count(*) as total'))
+            ->whereNotNull('localisation')
+            ->groupBy('localisation')
+            ->orderByDesc('total')
+            ->get();
+    }
+
+    if (!$type || $type === 'employeurs') {
+        $data['employeurs'] = \App\Models\Employer::select('ville', 'pays', \DB::raw('count(*) as total'))
+            ->whereNotNull('ville')
+            ->groupBy('ville', 'pays')
+            ->orderByDesc('total')
+            ->get();
+    }
+
+    if (!$type || $type === 'offres') {
+        $data['offres'] = \App\Models\JobOffer::select('localisation', \DB::raw('count(*) as total'))
+            ->whereNotNull('localisation')
+            ->groupBy('localisation')
+            ->orderByDesc('total')
+            ->get();
+    }
+
+    return response()->json($data);
+}
+
 }

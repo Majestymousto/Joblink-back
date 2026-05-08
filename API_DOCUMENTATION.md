@@ -1,6 +1,6 @@
 # JobLink Niger — Documentation API
 
-> Version : **v4.0** — Mise à jour : 01 Mai 2026
+> Version : **v5.0** — Mise à jour : 08 Mai 2026
 >
 > ✅ Tous les endpoints documentés ici sont testés et validés.
 
@@ -442,23 +442,6 @@ http://127.0.0.1:8001/api
 ### `GET /api/mes-candidatures`
 🔒 **Protégé** | 👤 **Candidat** — Liste de mes candidatures.
 
-**Réponse 200 :**
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "status": "pending",
-            "date": "26 Apr 2026",
-            "job": {
-                "titre": "Développeur Web Full Stack",
-                "entreprise": "Optimus Engineering SARL"
-            }
-        }
-    ]
-}
-```
-
 ---
 
 ### `DELETE /api/candidatures/{id}`
@@ -466,34 +449,10 @@ http://127.0.0.1:8001/api
 
 > ⚠️ Uniquement possible si le statut est `pending`.
 
-**Réponse 403 — Statut non pending :**
-```json
-{
-    "message": "Impossible de retirer une candidature déjà traitée."
-}
-```
-
 ---
 
 ### `GET /api/job-offers/{id}/candidats`
 🔒 **Protégé** | 👔 **Employeur propriétaire de l'offre** — Voir les candidats.
-
-**Réponse 200 :**
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "status": "pending",
-            "candidat": {
-                "name": "Moussa Diallo",
-                "titre_poste": "Développeur Web",
-                "competences": ["Laravel", "Vue.js"]
-            }
-        }
-    ]
-}
-```
 
 ---
 
@@ -517,36 +476,10 @@ http://127.0.0.1:8001/api
 ### `GET /api/profil`
 🔒 **Protégé** — Mon profil complet.
 
-**Réponse 200 — Candidat :**
-```json
-{
-    "id": 1,
-    "name": "Moussa Diallo",
-    "role": "candidate",
-    "titre_poste": "Développeur Web",
-    "bio": "Passionné par le développement...",
-    "telephone": "+227 96 12 34 56",
-    "localisation": "Niamey",
-    "competences": ["Laravel", "Vue.js"],
-    "buildcvpro_connected": true
-}
-```
-
 ---
 
 ### `PUT /api/profil`
 🔒 **Protégé** — Modifier mon profil.
-
-**Body (candidat) :**
-```json
-{
-    "titre_poste": "Développeur Web",
-    "bio": "Passionné par le développement...",
-    "telephone": "+227 96 12 34 56",
-    "localisation": "Niamey",
-    "competences": ["Laravel", "Vue.js"]
-}
-```
 
 ---
 
@@ -555,50 +488,15 @@ http://127.0.0.1:8001/api
 
 > ⚠️ Envoyer en `multipart/form-data`, pas en JSON !
 
-**Form Data :**
-```
-cv → fichier PDF (max 5MB)
-```
-
-**Réponse 201 :**
-```json
-{
-    "message": "CV uploadé avec succès !",
-    "cv_path": "cvs/xxxxxxxx.pdf",
-    "cv_url": "http://127.0.0.1:8001/storage/cvs/xxxxxxxx.pdf"
-}
-```
-
 ---
 
 ### `DELETE /api/profil/cv`
 🔒 **Protégé** | 👤 **Candidat** — Supprimer le CV uploadé.
 
-**Réponse 200 :**
-```json
-{
-    "message": "CV supprimé avec succès !"
-}
-```
-
 ---
 
 ### `GET /api/profil/cv`
 🔒 **Protégé** | 👤 **Candidat** — URL de téléchargement du CV uploadé.
-
-**Réponse 200 :**
-```json
-{
-    "cv_url": "http://127.0.0.1:8001/storage/cvs/xxxxxxxx.pdf"
-}
-```
-
-**Réponse 404 — Pas de CV :**
-```json
-{
-    "message": "Aucun CV uploadé."
-}
-```
 
 ---
 
@@ -619,232 +517,40 @@ cv → fichier PDF (max 5MB)
 ### `GET /api/candidat/experiences`
 🔒 **Protégé** | 👤 **Candidat** — Lister toutes ses expériences professionnelles.
 
-**Réponse 200 :**
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "intitule_poste": "Développeur Full Stack",
-            "entreprise": "Optimus Engineering",
-            "date_debut": "2023-01-01",
-            "date_fin": null,
-            "poste_actuel": true,
-            "description": "Développement d'applications web avec Laravel et Vue.js.",
-            "created_at": "2026-04-26T10:00:00.000000Z",
-            "updated_at": "2026-04-26T10:00:00.000000Z"
-        }
-    ]
-}
-```
-
 ---
 
 ### `POST /api/candidat/experiences`
 🔒 **Protégé** | 👤 **Candidat** — Ajouter une expérience professionnelle.
-
-**Body :**
-```json
-{
-    "intitule_poste": "Développeur Full Stack",
-    "entreprise": "Optimus Engineering",
-    "date_debut": "2023-01-01",
-    "date_fin": null,
-    "poste_actuel": true,
-    "description": "Développement d'applications web avec Laravel et Vue.js."
-}
-```
-
-| Champ | Type | Requis | Description |
-|---|---|---|---|
-| `intitule_poste` | string | ✅ | Titre du poste occupé |
-| `entreprise` | string | ✅ | Nom de l'entreprise |
-| `date_debut` | date (YYYY-MM-DD) | ✅ | Date de début du poste |
-| `date_fin` | date (YYYY-MM-DD) | ❌ | Date de fin — null si poste actuel |
-| `poste_actuel` | boolean | ❌ | `true` = toujours en poste. Si `true`, `date_fin` est automatiquement vidée |
-| `description` | string | ❌ | Détail des missions |
-
-**Réponse 201 :**
-```json
-{
-    "message": "Expérience ajoutée avec succès.",
-    "data": {
-        "id": 1,
-        "intitule_poste": "Développeur Full Stack",
-        "entreprise": "Optimus Engineering",
-        "date_debut": "2023-01-01",
-        "date_fin": null,
-        "poste_actuel": true,
-        "description": "Développement d'applications web avec Laravel et Vue.js."
-    }
-}
-```
-
-**Réponse 422 — Validation échouée :**
-```json
-{
-    "message": "The intitule poste field is required.",
-    "errors": {
-        "intitule_poste": ["The intitule poste field is required."]
-    }
-}
-```
 
 ---
 
 ### `PUT /api/candidat/experiences/{id}`
 🔒 **Protégé** | 👤 **Candidat propriétaire** — Modifier une expérience.
 
-> Seuls les champs envoyés sont mis à jour. Pas besoin de tout renvoyer.
-
-**Body (exemple partiel) :**
-```json
-{
-    "intitule_poste": "Lead Developer",
-    "poste_actuel": false,
-    "date_fin": "2025-12-31"
-}
-```
-
-**Réponse 200 :**
-```json
-{
-    "message": "Expérience mise à jour.",
-    "data": { ... }
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Expérience introuvable."
-}
-```
-
 ---
 
 ### `DELETE /api/candidat/experiences/{id}`
 🔒 **Protégé** | 👤 **Candidat propriétaire** — Supprimer une expérience.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Expérience supprimée."
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Expérience introuvable."
-}
-```
 
 ---
 
 ### `GET /api/candidat/formations`
 🔒 **Protégé** | 👤 **Candidat** — Lister toutes ses formations.
 
-**Réponse 200 :**
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "diplome": "Licence en Informatique",
-            "etablissement": "Université de Niamey",
-            "annee_debut": 2019,
-            "annee_fin": 2022,
-            "created_at": "2026-04-26T10:00:00.000000Z",
-            "updated_at": "2026-04-26T10:00:00.000000Z"
-        }
-    ]
-}
-```
-
 ---
 
 ### `POST /api/candidat/formations`
 🔒 **Protégé** | 👤 **Candidat** — Ajouter une formation.
-
-**Body :**
-```json
-{
-    "diplome": "Licence en Informatique",
-    "etablissement": "Université de Niamey",
-    "annee_debut": 2019,
-    "annee_fin": 2022
-}
-```
-
-| Champ | Type | Requis | Description |
-|---|---|---|---|
-| `diplome` | string | ✅ | Intitulé du diplôme ou de la formation |
-| `etablissement` | string | ✅ | Nom de l'école ou de l'établissement |
-| `annee_debut` | integer | ❌ | Année de début (ex: 2019) |
-| `annee_fin` | integer | ❌ | Année de fin (ex: 2022). Doit être ≥ `annee_debut` |
-
-**Réponse 201 :**
-```json
-{
-    "message": "Formation ajoutée avec succès.",
-    "data": {
-        "id": 1,
-        "diplome": "Licence en Informatique",
-        "etablissement": "Université de Niamey",
-        "annee_debut": 2019,
-        "annee_fin": 2022
-    }
-}
-```
 
 ---
 
 ### `PUT /api/candidat/formations/{id}`
 🔒 **Protégé** | 👤 **Candidat propriétaire** — Modifier une formation.
 
-> Seuls les champs envoyés sont mis à jour.
-
-**Body (exemple partiel) :**
-```json
-{
-    "annee_fin": 2023
-}
-```
-
-**Réponse 200 :**
-```json
-{
-    "message": "Formation mise à jour.",
-    "data": { ... }
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Formation introuvable."
-}
-```
-
 ---
 
 ### `DELETE /api/candidat/formations/{id}`
 🔒 **Protégé** | 👤 **Candidat propriétaire** — Supprimer une formation.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Formation supprimée."
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Formation introuvable."
-}
-```
 
 ---
 
@@ -855,31 +561,77 @@ cv → fichier PDF (max 5MB)
 ### `GET /api/messages`
 🔒 **Protégé** — Liste des conversations.
 
-**Réponse 200 :**
+---
+
+### `GET /api/messages/{applicationId}`
+🔒 **Protégé** — Messages d'une conversation. Marque automatiquement les messages comme lus.
+
+---
+
+### `POST /api/messages/{applicationId}`
+🔒 **Protégé** — Envoyer un message dans une conversation.
+
+---
+
+## ⭐ AVIS
+
+---
+
+### `POST /api/avis`
+🔒 **Protégé** | 👤 **Candidat** — Soumettre un avis (note + commentaire).
+
+> ⚠️ Un utilisateur ne peut soumettre qu'un seul avis. Le statut est toujours `pending` à la création.
+
+**Body :**
 ```json
 {
-    "data": [
-        {
-            "application_id": 2,
-            "job": {
-                "id": 2,
-                "titre": "Développeur Web Full Stack"
-            },
-            "entreprise": {
-                "id": 1,
-                "nom": "Optimus Engineering SARL"
-            },
-            "dernier_message": "Bonjour, je suis très motivé...",
-            "unread": 1
-        }
-    ]
+    "note": 4,
+    "commentaire": "Très bonne plateforme, facile à utiliser !",
+    "context": "page_accueil"
+}
+```
+
+| Champ | Type | Requis | Description |
+|---|---|---|---|
+| `note` | integer | ✅ | Note de 1 à 5 |
+| `commentaire` | string | ✅ | Texte de l'avis |
+| `context` | string | ❌ | Origine de l'avis (ex: `page_accueil`, `apres_candidature`) |
+
+**Réponse 201 :**
+```json
+{
+    "message": "Avis soumis avec succès.",
+    "data": {
+        "id": 1,
+        "note": 4,
+        "commentaire": "Très bonne plateforme, facile à utiliser !",
+        "context": "page_accueil",
+        "status": "pending"
+    }
+}
+```
+
+**Réponse 409 — Avis déjà soumis :**
+```json
+{
+    "message": "Vous avez déjà soumis un avis."
+}
+```
+
+**Réponse 422 — Validation échouée :**
+```json
+{
+    "message": "The note field is required.",
+    "errors": {
+        "note": ["The note field is required."]
+    }
 }
 ```
 
 ---
 
-### `GET /api/messages/{applicationId}`
-🔒 **Protégé** — Messages d'une conversation. Marque automatiquement les messages comme lus.
+### `GET /api/avis/approved`
+🌐 **Public** — Retourne uniquement les avis approuvés.
 
 **Réponse 200 :**
 ```json
@@ -887,45 +639,16 @@ cv → fichier PDF (max 5MB)
     "data": [
         {
             "id": 1,
-            "content": "Bonjour, je suis très motivé !",
-            "from_me": true,
-            "read": true,
-            "created_at": "10:00"
-        },
-        {
-            "id": 2,
-            "content": "Merci, nous voudrions vous rencontrer.",
-            "from_me": false,
-            "read": true,
-            "created_at": "10:07"
+            "note": 4,
+            "commentaire": "Très bonne plateforme, facile à utiliser !",
+            "context": "page_accueil",
+            "created_at": "08 Mai 2026",
+            "auteur": {
+                "name": "Moussa Diallo",
+                "avatar": null
+            }
         }
     ]
-}
-```
-
----
-
-### `POST /api/messages/{applicationId}`
-🔒 **Protégé** — Envoyer un message dans une conversation.
-
-**Body :**
-```json
-{
-    "content": "Bonjour, je suis très motivé pour rejoindre votre équipe !"
-}
-```
-
-**Réponse 201 :**
-```json
-{
-    "data": {
-        "id": 1,
-        "content": "Bonjour...",
-        "from_me": true,
-        "read": false,
-        "created_at": "10:00"
-    },
-    "message": "Message envoyé !"
 }
 ```
 
@@ -936,161 +659,27 @@ cv → fichier PDF (max 5MB)
 ---
 
 ### `GET /api/buildcvpro/check`
-🔒 **Protégé** | 👤 **Candidat** — Vérifie si l'email de l'utilisateur existe sur Build CV Pro.
-
-**Réponse 200 — Email trouvé :**
-```json
-{
-    "exists": true,
-    "user": {
-        "id": 7,
-        "name": "Moussa Diallo",
-        "email": "moussa@test.com"
-    }
-}
-```
-
-**Réponse 200 — Email non trouvé :**
-```json
-{
-    "exists": false
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Vérifie si l'email existe sur Build CV Pro.
 
 ---
 
 ### `POST /api/buildcvpro/connect`
-🔒 **Protégé** | 👤 **Candidat** — Connecter son compte Build CV Pro. Le token retourné est stocké dans le profil candidat.
-
-**Body :**
-```json
-{
-    "email": "moussa@buildcvpro.com",
-    "password": "password123"
-}
-```
-
-**Réponse 200 :**
-```json
-{
-    "message": "Compte BuildCVPro connecté avec succès !",
-    "email": "moussa@buildcvpro.com"
-}
-```
-
-**Réponse 401 — Mauvais identifiants BuildCVPro :**
-```json
-{
-    "message": "Identifiants BuildCVPro invalides."
-}
-```
-
-**Réponse 500 — BuildCVPro inaccessible :**
-```json
-{
-    "message": "Impossible de contacter BuildCVPro."
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Connecter son compte Build CV Pro.
 
 ---
 
 ### `GET /api/buildcvpro/cvs`
-🔒 **Protégé** | 👤 **Candidat connecté** — Récupérer la liste de ses CVs depuis Build CV Pro.
-
-**Réponse 200 :**
-```json
-{
-    "data": [
-        {
-            "id": 9,
-            "title": "Mon premier CV",
-            "template": "classic",
-            "is_public": true,
-            "share_url": "https://buildcvpro.com/cv/abc123",
-            "created_at": "2026-04-25"
-        }
-    ]
-}
-```
-
-**Réponse 400 — Compte non connecté :**
-```json
-{
-    "message": "Compte BuildCVPro non connecté."
-}
-```
-
-**Réponse 401 — Token expiré :**
-```json
-{
-    "message": "Token BuildCVPro expiré. Veuillez vous reconnecter."
-}
-```
+🔒 **Protégé** | 👤 **Candidat connecté** — Récupérer la liste de ses CVs.
 
 ---
 
 ### `GET /api/buildcvpro/cvs/{id}`
-🔒 **Protégé** | 👤 **Candidat connecté** — Récupérer les détails complets d'un CV BuildCVPro ainsi que son `share_url` pour la prévisualisation.
-
-> Le `share_url` retourné peut être utilisé directement dans un `<iframe>` ou ouvert dans un nouvel onglet pour la preview. Le téléchargement est géré côté frontend via `window.print()`.
-
-**Réponse 200 :**
-```json
-{
-    "data": {
-        "id": 9,
-        "title": "Mon premier CV",
-        "template": "classic",
-        "share_url": "https://buildcvpro.com/cv/abc123",
-        "data": {
-            "personal": {
-                "first_name": "Moussa",
-                "last_name": "Diallo",
-                "title": "Développeur Web"
-            },
-            "skills": [
-                { "name": "Laravel", "level": 5 },
-                { "name": "Vue.js", "level": 4 }
-            ],
-            "experiences": [],
-            "educations": []
-        }
-    }
-}
-```
-
-**Réponse 400 — Compte non connecté :**
-```json
-{
-    "message": "Compte BuildCVPro non connecté."
-}
-```
-
-**Réponse 401 — Token expiré :**
-```json
-{
-    "message": "Token BuildCVPro expiré. Veuillez vous reconnecter."
-}
-```
-
-**Réponse 404 — CV introuvable :**
-```json
-{
-    "message": "CV introuvable."
-}
-```
+🔒 **Protégé** | 👤 **Candidat connecté** — Détails complets d'un CV et son `share_url`.
 
 ---
 
 ### `DELETE /api/buildcvpro/disconnect`
-🔒 **Protégé** | 👤 **Candidat** — Déconnecter Build CV Pro. Supprime le token stocké.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Compte BuildCVPro déconnecté."
-}
-```
+🔒 **Protégé** | 👤 **Candidat** — Déconnecter Build CV Pro.
 
 ---
 
@@ -1119,6 +708,144 @@ cv → fichier PDF (max 5MB)
 
 ---
 
+### `GET /api/admin/stats/weekly`
+🔒 **Protégé** | 🔑 **Admin** — Stats par semaine (inscriptions, offres, candidatures).
+
+**Query params :**
+| Param | Type | Description |
+|---|---|---|
+| `periode` | integer | Nombre de semaines : `4`, `8`, `12`, `24`. Défaut : `4` |
+
+**Réponse 200 :**
+```json
+{
+    "periode": 4,
+    "data": [
+        {
+            "semaine": "14 Avr",
+            "inscriptions": 3,
+            "offres": 1,
+            "candidatures": 5
+        },
+        {
+            "semaine": "21 Avr",
+            "inscriptions": 2,
+            "offres": 0,
+            "candidatures": 3
+        }
+    ]
+}
+```
+
+---
+
+### `GET /api/admin/stats/region`
+🔒 **Protégé** | 🔑 **Admin** — Stats par région (candidats, employeurs, offres).
+
+**Query params :**
+| Param | Type | Description |
+|---|---|---|
+| `type` | string | Filtrer par type : `candidats`, `employeurs`, `offres`. Si absent, retourne les 3. |
+
+**Réponse 200 (sans filtre) :**
+```json
+{
+    "candidats": [
+        { "localisation": "Niamey", "total": 8 },
+        { "localisation": "Zinder", "total": 3 }
+    ],
+    "employeurs": [
+        { "ville": "Niamey", "pays": "Niger", "total": 5 }
+    ],
+    "offres": [
+        { "localisation": "Niamey", "total": 12 },
+        { "localisation": "Agadez", "total": 2 }
+    ]
+}
+```
+
+**Réponse 200 (avec `?type=offres`) :**
+```json
+{
+    "offres": [
+        { "localisation": "Niamey", "total": 12 },
+        { "localisation": "Agadez", "total": 2 }
+    ]
+}
+```
+
+---
+
+### `GET /api/admin/avis`
+🔒 **Protégé** | 🔑 **Admin** — Récupérer tous les avis (tous statuts).
+
+**Query params :**
+| Param | Type | Description |
+|---|---|---|
+| `status` | string | Filtrer par statut : `pending`, `approved`, `rejected` |
+
+**Réponse 200 :**
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "note": 4,
+            "commentaire": "Très bonne plateforme !",
+            "context": "page_accueil",
+            "status": "pending",
+            "created_at": "08 Mai 2026 15:09",
+            "auteur": {
+                "id": 1,
+                "name": "Moussa Diallo",
+                "email": "moussa@example.com",
+                "avatar": null
+            }
+        }
+    ]
+}
+```
+
+---
+
+### `POST /api/admin/avis/{id}/approve`
+🔒 **Protégé** | 🔑 **Admin** — Approuver un avis.
+
+**Réponse 200 :**
+```json
+{
+    "message": "Avis approuvé avec succès."
+}
+```
+
+**Réponse 409 — Déjà approuvé :**
+```json
+{
+    "message": "Cet avis est déjà approuvé."
+}
+```
+
+---
+
+### `POST /api/admin/avis/{id}/reject`
+🔒 **Protégé** | 🔑 **Admin** — Rejeter un avis.
+
+**Réponse 200 :**
+```json
+{
+    "message": "Avis rejeté avec succès."
+}
+```
+
+**Réponse 409 — Déjà rejeté :**
+```json
+{
+    "message": "Cet avis est déjà rejeté."
+}
+```
+
+---
+
 ### `GET /api/admin/employers`
 🔒 **Protégé** | 🔑 **Admin** — Liste paginée de tous les employeurs (15 par page).
 
@@ -1130,244 +857,42 @@ cv → fichier PDF (max 5MB)
 ---
 
 ### `POST /api/admin/employers/{id}/validate`
-🔒 **Protégé** | 🔑 **Admin** — Valider un compte employeur. Passe le statut à `active`.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Compte employeur validé avec succès !"
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Entreprise introuvable."
-}
-```
+🔒 **Protégé** | 🔑 **Admin** — Valider un compte employeur.
 
 ---
 
 ### `POST /api/admin/employers/{id}/reject`
-🔒 **Protégé** | 🔑 **Admin** — Rejeter un compte employeur avec une raison obligatoire.
-
-**Body :**
-```json
-{
-    "raison": "Documents incomplets et informations non vérifiables."
-}
-```
-
-**Réponse 200 :**
-```json
-{
-    "message": "Compte employeur rejeté."
-}
-```
+🔒 **Protégé** | 🔑 **Admin** — Rejeter un compte employeur.
 
 ---
 
 ### `GET /api/admin/users`
 🔒 **Protégé** | 🔑 **Admin** — Liste paginée de tous les utilisateurs avec filtres.
 
-**Query params :**
-| Param | Type | Description |
-|---|---|---|
-| `search` | string | Recherche par nom ou email |
-| `role` | string | Filtrer par rôle : `admin`, `candidate`, `employer` |
-| `status` | string | `active` ou `inactive` |
-| `per_page` | integer | Nombre de résultats par page (défaut : 15) |
-
-**Réponse 200 :**
-```json
-{
-    "current_page": 1,
-    "data": [
-        {
-            "id": 1,
-            "name": "Moussa Diallo",
-            "email": "moussa@example.com",
-            "role": "candidate",
-            "is_active": true,
-            "created_at": "26 Apr 2026"
-        }
-    ],
-    "per_page": 15,
-    "total": 5
-}
-```
-
 ---
 
 ### `GET /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Voir le détail d'un utilisateur.
 
-**Réponse 200 :**
-```json
-{
-    "data": {
-        "id": 1,
-        "name": "Moussa Diallo",
-        "email": "moussa@example.com",
-        "role": "candidate",
-        "is_active": true,
-        "created_at": "26 Apr 2026"
-    }
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Utilisateur introuvable."
-}
-```
-
 ---
 
 ### `POST /api/admin/users`
-🔒 **Protégé** | 🔑 **Admin** — Créer un utilisateur avec n'importe quel rôle, y compris `admin`.
-
-> C'est le **seul moyen** de créer un compte admin. Le `POST /api/register` public ne l'autorise pas.
-
-**Body :**
-```json
-{
-    "name": "Admin Secondaire",
-    "email": "admin2@example.com",
-    "password": "Password1",
-    "role": "admin"
-}
-```
-
-| Champ | Type | Requis | Description |
-|---|---|---|---|
-| `name` | string | ✅ | Nom complet |
-| `email` | string | ✅ | Email unique |
-| `password` | string | ✅ | Min 8 caractères, majuscule + chiffre requis |
-| `role` | string | ✅ | `admin`, `candidate` ou `employer` |
-
-**Réponse 201 :**
-```json
-{
-    "message": "Utilisateur créé avec succès.",
-    "data": {
-        "id": 6,
-        "name": "Admin Secondaire",
-        "email": "admin2@example.com",
-        "role": "admin",
-        "is_active": true
-    }
-}
-```
-
-**Réponse 422 — Email déjà pris :**
-```json
-{
-    "message": "The email has already been taken.",
-    "errors": {
-        "email": ["The email has already been taken."]
-    }
-}
-```
+🔒 **Protégé** | 🔑 **Admin** — Créer un utilisateur (y compris `admin`).
 
 ---
 
 ### `PUT /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Modifier un utilisateur.
 
-> Seuls les champs envoyés sont mis à jour. Le mot de passe est optionnel.
-
-**Body :**
-```json
-{
-    "name": "Nouveau Nom",
-    "email": "nouveau@example.com",
-    "password": "NewPassword1",
-    "role": "employer"
-}
-```
-
-**Réponse 200 :**
-```json
-{
-    "message": "Utilisateur mis à jour avec succès.",
-    "data": { ... }
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Utilisateur introuvable."
-}
-```
-
 ---
 
 ### `DELETE /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Supprimer un utilisateur définitivement.
 
-> ⚠️ Un admin ne peut pas supprimer son propre compte.
-
-**Réponse 200 :**
-```json
-{
-    "message": "Utilisateur supprimé avec succès."
-}
-```
-
-**Réponse 403 — Auto-suppression :**
-```json
-{
-    "message": "Vous ne pouvez pas supprimer votre propre compte."
-}
-```
-
-**Réponse 404 :**
-```json
-{
-    "message": "Utilisateur introuvable."
-}
-```
-
 ---
 
 ### `PATCH /api/admin/users/{id}/toggle-status`
-🔒 **Protégé** | 🔑 **Admin** — Activer ou désactiver un compte utilisateur. Bascule automatiquement entre `true` et `false`.
-
-> ⚠️ Un admin ne peut pas désactiver son propre compte.
-
-**Réponse 200 — Compte désactivé :**
-```json
-{
-    "message": "Compte désactivé avec succès.",
-    "data": {
-        "id": 3,
-        "name": "Moussa Diallo",
-        "is_active": false
-    }
-}
-```
-
-**Réponse 200 — Compte activé :**
-```json
-{
-    "message": "Compte activé avec succès.",
-    "data": {
-        "id": 3,
-        "name": "Moussa Diallo",
-        "is_active": true
-    }
-}
-```
-
-**Réponse 403 — Auto-désactivation :**
-```json
-{
-    "message": "Vous ne pouvez pas désactiver votre propre compte."
-}
-```
+🔒 **Protégé** | 🔑 **Admin** — Activer ou désactiver un compte utilisateur.
 
 ---
 
@@ -1382,17 +907,29 @@ cv → fichier PDF (max 5MB)
 
 ---
 
+## 📊 Statuts des avis
+
+| Statut | Description |
+|---|---|
+| `pending` | En attente de modération |
+| `approved` | Approuvé — visible publiquement |
+| `rejected` | Rejeté — non visible |
+
+---
+
 ## 🔒 Permissions par rôle
 
 | Action | 🌐 Public | 👤 Candidat | 👔 Employeur | 🔑 Admin |
 |---|---|---|---|---|
 | Voir les offres | ✅ | ✅ | ✅ | ✅ |
 | Voir les entreprises | ✅ | ✅ | ✅ | ✅ |
+| Voir les avis approuvés | ✅ | ✅ | ✅ | ✅ |
 | Postuler | ❌ | ✅ | ❌ | ❌ |
 | Sauvegarder une offre | ❌ | ✅ | ❌ | ❌ |
 | Uploader un CV | ❌ | ✅ | ❌ | ❌ |
 | Connecter Build CV Pro | ❌ | ✅ | ❌ | ❌ |
 | Gérer expériences / formations | ❌ | ✅ | ❌ | ❌ |
+| Soumettre un avis | ❌ | ✅ | ❌ | ❌ |
 | Publier une offre | ❌ | ❌ | ✅ | ✅ |
 | Voir les candidatures | ❌ | Les siennes | ✅ | ✅ |
 | Voir les profils candidats | ❌ | ❌ | ✅ | ✅ |
@@ -1400,6 +937,7 @@ cv → fichier PDF (max 5MB)
 | Valider un employeur | ❌ | ❌ | ❌ | ✅ |
 | Gérer les utilisateurs | ❌ | ❌ | ❌ | ✅ |
 | Voir les stats | ❌ | ❌ | ❌ | ✅ |
+| Modérer les avis | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
@@ -1411,3 +949,4 @@ cv → fichier PDF (max 5MB)
 | v2.0 | 26 Avr 2026 | Ajout messages, BuildCVPro, CV upload |
 | v3.0 | 01 Mai 2026 | Ajout gestion utilisateurs admin, expériences & formations candidat, preview CV BuildCVPro |
 | v4.0 | 01 Mai 2026 | Ajout endpoints publics entreprises (liste + détail avec offres actives) |
+| v5.0 | 08 Mai 2026 | Ajout module Avis complet (POST /api/avis, GET /api/avis/approved, GET+POST admin/avis), stats weekly et region |

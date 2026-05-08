@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\CvController;
 use App\Http\Controllers\Api\CandidateProfileController;
 use App\Http\Controllers\Api\EntrepriseController;
+use App\Http\Controllers\Api\AvisController;
 
 // Routes publiques
 Route::post('/register',    [AuthController::class, 'register']);
@@ -24,6 +25,9 @@ Route::get('/job-offers/{id}', [JobOfferController::class, 'show']);
 // Entreprises publiques
 Route::get('/entreprises',      [EntrepriseController::class, 'index']);
 Route::get('/entreprises/{id}', [EntrepriseController::class, 'show']);
+
+// Avis publics
+Route::get('/avis/approved', [AvisController::class, 'approved']);
 
 // Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
@@ -50,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job-offers/{id}/apply', [ApplicationController::class, 'apply']);
     Route::get('/mes-candidatures',       [ApplicationController::class, 'myApplications']);
     Route::delete('/candidatures/{id}',   [ApplicationController::class, 'withdraw']);
+    Route::post('/avis', [AvisController::class, 'store']);
+    
 
     // Candidatures — Entreprise
     Route::get('/job-offers/{id}/candidats', [ApplicationController::class, 'jobCandidates']);
@@ -102,6 +108,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/users/{id}',                 [AdminController::class, 'updateUser']);
         Route::delete('/users/{id}',              [AdminController::class, 'deleteUser']);
         Route::patch('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
+
+        // Avis laissé par les candidats
+        Route::get('/avis', [AvisController::class, 'adminIndex']);
+        Route::post('/avis/{id}/approve', [AvisController::class, 'approve']);
+        Route::post('/avis/{id}/reject', [AvisController::class, 'reject']);
+
+        // Statistiques hebdomadaires
+        Route::get('/stats/weekly', [AdminController::class, 'statsWeekly']);
+        Route::get('/stats/region', [AdminController::class, 'statsRegion']);
     });
 
 });
