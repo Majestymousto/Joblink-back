@@ -115,6 +115,29 @@ class ProfileController extends Controller
         return response()->json($candidates);
     }
 
+    // Upload logo entreprise
+public function uploadLogo(Request $request)
+{
+    $request->validate([
+        'logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+    ]);
+
+    $user = $request->user();
+
+    if (!$user->isEmployer()) {
+        return response()->json(['message' => 'Accès non autorisé.'], 403);
+    }
+
+    $path = $request->file('logo')->store('logos', 'public');
+
+    $user->employer->update(['logo' => $path]);
+
+    return response()->json([
+        'message' => 'Logo mis à jour.',
+        'logo'    => asset('storage/' . $path),
+    ]);
+}
+
     // Profil d'un candidat (entreprise)
     public function candidateProfile(Request $request, $id)
     {

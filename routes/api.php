@@ -36,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
 
+    // Logo entreprise
+    Route::post('/profil/logo', [ProfileController::class, 'uploadLogo']);
+
     // Profil
     Route::get('/profil', [ProfileController::class, 'show']);
     Route::put('/profil', [ProfileController::class, 'update']);

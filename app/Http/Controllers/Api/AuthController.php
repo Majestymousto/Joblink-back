@@ -41,12 +41,29 @@ class AuthController extends Controller
         }
 
         if ($user->isEmployer()) {
-            Employer::create([
-                'user_id'       => $user->id,
-                'nom_entreprise' => $request->nom_entreprise ?? '',
-                'statut'        => 'pending',
-            ]);
-        }
+    Employer::create([
+        'user_id'               => $user->id,
+        'nom_entreprise'        => $request->nom_entreprise ?? '',
+        'type_entreprise'       => $request->type_entreprise,
+        'secteur'               => $request->secteur,
+        'description'           => $request->description,
+        'pays'                  => $request->pays,
+        'ville'                 => $request->ville,
+        'adresse'               => $request->adresse,
+        'email_contact'         => $request->email_contact,
+        'telephone'             => $request->telephone,
+        'site_web'              => $request->site_web,
+        'responsable_nom'       => $request->responsable_nom,
+        'responsable_fonction'  => $request->responsable_fonction,
+        'responsable_telephone' => $request->responsable_telephone,
+        'responsable_email'     => $request->responsable_email,
+        'numero_identification' => $request->numero_identification,
+        'nif'                   => $request->nif,
+        'annee_creation'        => $request->annee_creation,
+        'nombre_employes'       => $request->nombre_employes,
+        'statut'                => 'pending',
+    ]);
+}
 
         $token = $this->createTokenWithSource($user, $request);
 
@@ -57,42 +74,50 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
+{
+    $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Identifiants invalides.'], 401);
-        }
-
-        // Vérifier si employeur est validé
-        if ($user->isEmployer()) {
-            $employer = $user->employer;
-            if ($employer && $employer->statut === 'pending') {
-                return response()->json([
-                    'message' => 'Votre compte est en attente de validation.',
-                    'status'  => 'pending',
-                ], 403);
-            }
-            if ($employer && $employer->statut === 'rejected') {
-                return response()->json([
-                    'message' => 'Votre compte a été rejeté.',
-                    'status'  => 'rejected',
-                ], 403);
-            }
-        }
-
-        $token = $this->createTokenWithSource($user, $request);
-
-        return response()->json([
-            'token' => $token,
-            'user'  => $this->formatUser($user),
-        ]);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Identifiants invalides.'], 401);
     }
+
+    // Vérifier si le compte est suspendu
+    if (!$user->is_active) {
+        return response()->json([
+            'message' => 'Votre compte a été suspendu. Contactez l\'administrateur.',
+            'status'  => 'suspended',
+        ], 403);
+    }
+
+    // Vérifier si employeur est validé
+    if ($user->isEmployer()) {
+        $employer = $user->employer;
+        if ($employer && $employer->statut === 'pending') {
+            return response()->json([
+                'message' => 'Votre compte est en attente de validation.',
+                'status'  => 'pending',
+            ], 403);
+        }
+        if ($employer && $employer->statut === 'rejected') {
+            return response()->json([
+                'message' => 'Votre compte a été rejeté.',
+                'status'  => 'rejected',
+            ], 403);
+        }
+    }
+
+    $token = $this->createTokenWithSource($user, $request);
+
+    return response()->json([
+        'token' => $token,
+        'user'  => $this->formatUser($user),
+    ]);
+}
 
     public function googleAuth(Request $request)
     {
@@ -157,9 +182,19 @@ class AuthController extends Controller
     }
 
     public function me(Request $request)
-    {
-        return response()->json($this->formatUser($request->user()));
+{
+    $user = $request->user();
+
+    if (!$user->is_active) {
+        $user->currentAccessToken()->delete();
+        return response()->json([
+            'message' => 'Votre compte a été suspendu.',
+            'status'  => 'suspended',
+        ], 403);
     }
+
+    return response()->json($this->formatUser($user));
+}
 
     private function formatUser(User $user): array
     {

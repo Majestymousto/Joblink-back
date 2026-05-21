@@ -27,6 +27,7 @@ class Employer extends Model
         'responsable_telephone',
         'responsable_email',
         'numero_identification',
+        'nif',
         'annee_creation',
         'nombre_employes',
         'statut',
