@@ -29,6 +29,9 @@ Route::get('/entreprises/{id}', [EntrepriseController::class, 'show']);
 // Avis publics
 Route::get('/avis/approved', [AvisController::class, 'approved']);
 
+// Statistiques publiques
+Route::get('/stats/public', [AdminController::class, 'publicStats']);
+
 // Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
 

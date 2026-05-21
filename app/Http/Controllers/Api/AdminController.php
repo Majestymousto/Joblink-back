@@ -223,6 +223,15 @@ public function showUser(Request $request, $id)
     ]]);
 }
 
+public function publicStats()
+{
+    return response()->json([
+        'total_candidats' => \App\Models\User::where('role', 'candidate')->count(),
+        'total_entreprises' => \App\Models\User::where('role', 'employer')->count(),
+        'total_offres' => \App\Models\JobOffer::where('statut', 'active')->count(),
+    ]);
+}
+
 // POST /api/admin/users
 public function createUser(Request $request)
 {
