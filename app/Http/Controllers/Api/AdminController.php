@@ -44,6 +44,11 @@ class AdminController extends Controller
                 'responsable_nom'      => $e->responsable_nom,
                 'responsable_fonction' => $e->responsable_fonction,
                 'responsable_email'    => $e->responsable_email,
+                'responsable_telephone' => $e->responsable_telephone,
+                'adresse'               => $e->adresse,
+                'raison_rejet'          => $e->raison_rejet,
+                'nif'                   => $e->nif,
+                'logo'                  => $e->logo ? asset('storage/' . $e->logo) : null,
                 'numero_identification'=> $e->numero_identification,
                 'annee_creation'       => $e->annee_creation,
                 'nombre_employes'      => $e->nombre_employes,
@@ -69,18 +74,35 @@ class AdminController extends Controller
             ->latest()
             ->paginate(15)
             ->through(fn($e) => [
-                'id'             => $e->id,
-                'nom_entreprise' => $e->nom_entreprise,
-                'secteur'        => $e->secteur,
-                'ville'          => $e->ville,
-                'statut'         => $e->statut,
-                'created_at'     => $e->created_at->format('d M Y'),
-                'user'           => [
-                    'id'    => $e->user->id,
-                    'name'  => $e->user->name,
-                    'email' => $e->user->email,
-                ],
-            ]);
+    'id'                    => $e->id,
+    'nom_entreprise'        => $e->nom_entreprise,
+    'type_entreprise'       => $e->type_entreprise,
+    'secteur'               => $e->secteur,
+    'description'           => $e->description,
+    'pays'                  => $e->pays,
+    'ville'                 => $e->ville,
+    'adresse'               => $e->adresse,
+    'email_contact'         => $e->email_contact,
+    'telephone'             => $e->telephone,
+    'site_web'              => $e->site_web,
+    'responsable_nom'       => $e->responsable_nom,
+    'responsable_fonction'  => $e->responsable_fonction,
+    'responsable_email'     => $e->responsable_email,
+    'responsable_telephone' => $e->responsable_telephone,
+    'numero_identification' => $e->numero_identification,
+    'nif'                   => $e->nif,
+    'logo' => $e->logo ? asset('storage/' . $e->logo) : null,
+    'annee_creation'        => $e->annee_creation,
+    'nombre_employes'       => $e->nombre_employes,
+    'statut'                => $e->statut,
+    'raison_rejet'          => $e->raison_rejet,
+    'created_at'            => $e->created_at->format('d M Y'),
+    'user'                  => [
+        'id'    => $e->user->id,
+        'name'  => $e->user->name,
+        'email' => $e->user->email,
+    ],
+]);
 
         return response()->json($employers);
     }
@@ -199,6 +221,15 @@ public function showUser(Request $request, $id)
         'is_active'  => $user->is_active,
         'created_at' => $user->created_at->format('d M Y'),
     ]]);
+}
+
+public function publicStats()
+{
+    return response()->json([
+        'total_candidats' => \App\Models\User::where('role', 'candidate')->count(),
+        'total_entreprises' => \App\Models\User::where('role', 'employer')->count(),
+        'total_offres' => \App\Models\JobOffer::where('statut', 'active')->count(),
+    ]);
 }
 
 // POST /api/admin/users

@@ -29,12 +29,18 @@ Route::get('/entreprises/{id}', [EntrepriseController::class, 'show']);
 // Avis publics
 Route::get('/avis/approved', [AvisController::class, 'approved']);
 
+// Statistiques publiques
+Route::get('/stats/public', [AdminController::class, 'publicStats']);
+
 // Routes protégées
 Route::middleware('auth:sanctum')->group(function () {
 
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+
+    // Logo entreprise
+    Route::post('/profil/logo', [ProfileController::class, 'uploadLogo']);
 
     // Profil
     Route::get('/profil', [ProfileController::class, 'show']);
