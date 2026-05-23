@@ -50,6 +50,8 @@ class ProfileController extends Controller
                 'email_contact'        => $profile->email_contact,
                 'telephone'            => $profile->telephone,
                 'site_web'             => $profile->site_web,
+                'taille'               => $profile->taille,
+                'annee_creation'       => $profile->annee_creation,
                 'statut'               => $profile->statut,
             ]);
         }
@@ -85,6 +87,9 @@ class ProfileController extends Controller
                 'adresse'         => $request->adresse         ?? $user->employer->adresse,
                 'telephone'       => $request->telephone       ?? $user->employer->telephone,
                 'site_web'        => $request->site_web        ?? $user->employer->site_web,
+                'type_entreprise' => $request->type_entreprise ?? $user->employer->type_entreprise,
+                'taille'          => $request->taille          ?? $user->employer->taille,
+                'annee_creation'  => $request->annee_creation  ?? $user->employer->annee_creation,
             ]);
         }
 
