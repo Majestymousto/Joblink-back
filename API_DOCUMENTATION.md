@@ -1,6 +1,6 @@
 # JobLink Niger — Documentation API
 
-> Version : **v5.0** — Mise à jour : 08 Mai 2026
+> Version : **v5.1** — Mise à jour : 24 Mai 2026
 >
 > ✅ Tous les endpoints documentés ici sont testés et validés.
 
@@ -242,7 +242,7 @@ http://127.0.0.1:8001/api
 | `type_contrat` | string | `cdi`, `cdd`, `stage`, `freelance`, `alternance` |
 | `secteur` | string | Secteur d'activité |
 | `localisation` | string | Ville |
-| `sort` | string | `recent` (par défaut) ou `company` |
+| `sort` | string | `recent` (par défaut) ou `salary` |
 
 ---
 
@@ -287,6 +287,27 @@ http://127.0.0.1:8001/api
 
 ### `DELETE /api/job-offers/{id}`
 🔒 **Protégé** | 👔 **Propriétaire de l'offre** — Supprimer une offre.
+
+---
+
+### `GET /api/employer/job-offers`
+🔒 **Protégé** | 👔 **Employeur** — Liste de toutes les offres de l'employeur connecté (tous statuts).
+
+**Réponse 200 :**
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "titre": "Développeur Web Full Stack",
+            "type_contrat": "cdi",
+            "statut": "active",
+            "localisation": "Niamey",
+            "created_at": "2026-04-26T10:00:00.000000Z"
+        }
+    ]
+}
+```
 
 ---
 
@@ -500,6 +521,26 @@ http://127.0.0.1:8001/api
 
 ---
 
+### `POST /api/profil/logo`
+🔒 **Protégé** | 👔 **Employeur** — Uploader le logo de l'entreprise.
+
+> ⚠️ Envoyer en `multipart/form-data`, pas en JSON !
+
+**Form Data :**
+```
+logo → fichier image JPEG/PNG/WebP (max 2MB)
+```
+
+**Réponse 200 :**
+```json
+{
+    "message": "Logo mis à jour.",
+    "logo": "http://127.0.0.1:8001/storage/logos/xxxxxxxx.png"
+}
+```
+
+---
+
 ### `GET /api/candidats`
 🔒 **Protégé** | 👔 **Employeur** — Liste des candidats (12 par page).
 
@@ -625,6 +666,20 @@ http://127.0.0.1:8001/api
     "errors": {
         "note": ["The note field is required."]
     }
+}
+```
+
+---
+
+### `GET /api/stats/public`
+🌐 **Public** — Statistiques globales visibles sur la page d'accueil.
+
+**Réponse 200 :**
+```json
+{
+    "total_candidats": 42,
+    "total_entreprises": 8,
+    "total_offres": 15
 }
 ```
 
@@ -950,3 +1005,4 @@ http://127.0.0.1:8001/api
 | v3.0 | 01 Mai 2026 | Ajout gestion utilisateurs admin, expériences & formations candidat, preview CV BuildCVPro |
 | v4.0 | 01 Mai 2026 | Ajout endpoints publics entreprises (liste + détail avec offres actives) |
 | v5.0 | 08 Mai 2026 | Ajout module Avis complet (POST /api/avis, GET /api/avis/approved, GET+POST admin/avis), stats weekly et region |
+| v5.1 | 24 Mai 2026 | Ajout GET /api/employer/job-offers, GET /api/stats/public, POST /api/profil/logo — correction paramètre sort (`salary` et non `company`) |

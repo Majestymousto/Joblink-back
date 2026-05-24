@@ -16,13 +16,13 @@ class JobOfferController extends Controller
 
         // Recherche par mot clé
         // Après
-if ($request->get('query')) {
-    $search = $request->get('query');
-    $query->where(function($q) use ($search) {
-        $q->where('titre', 'like', '%' . $search . '%')
-          ->orWhere('description', 'like', '%' . $search . '%');
-    });
-}
+        if ($request->get('query')) {
+            $search = $request->get('query');
+            $query->where(function ($q) use ($search) {
+                $q->where('titre', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
 
         // Filtre par localisation
         if ($request->localisation) {
@@ -66,50 +66,70 @@ if ($request->get('query')) {
             ->get();
 
         return response()->json([
-            'data'    => $offer,
+            'data' => $offer,
             'similar' => $similar,
         ]);
     }
 
-    // Créer une offre (employeur)
-    public function store(Request $request)
+    // Offres de l'employeur connecté
+    public function myOffers(Request $request)
     {
-        if (!$request->user()->isEmployer()) {
+        if (! $request->user()->isEmployer()) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
         $employer = $request->user()->employer;
 
-        if (!$employer || !$employer->isActive()) {
+        if (! $employer) {
+            return response()->json(['message' => 'Profil employeur introuvable.'], 404);
+        }
+
+        $offers = JobOffer::where('employer_id', $employer->id)
+            ->latest()
+            ->get();
+
+        return response()->json(['data' => $offers]);
+    }
+
+    // Créer une offre (employeur)
+    public function store(Request $request)
+    {
+        if (! $request->user()->isEmployer()) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
+
+        $employer = $request->user()->employer;
+
+        if (! $employer || ! $employer->isActive()) {
             return response()->json(['message' => 'Votre compte employeur n\'est pas encore validé.'], 403);
         }
 
         $request->validate([
-            'titre'        => 'required|string|max:255',
-            'description'  => 'required|string',
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
             'type_contrat' => 'required|in:cdi,cdd,stage,freelance,alternance',
         ]);
 
         $offer = JobOffer::create([
-            'employer_id'     => $employer->id,
-            'titre'           => $request->titre,
-            'excerpt'         => $request->excerpt,
-            'description'     => $request->description,
-            'requirements'    => $request->requirements ?? [],
-            'perks'           => $request->perks ?? [],
-            'type_contrat'    => $request->type_contrat,
-            'secteur'         => $request->secteur,
-            'localisation'    => $request->localisation,
-            'salaire'         => $request->salaire,
-            'experience'      => $request->experience,
-            'niveau_etude'    => $request->niveau_etude,
-            'competences'     => $request->competences ?? [],
+            'employer_id' => $employer->id,
+            'titre' => $request->titre,
+            'excerpt' => $request->excerpt,
+            'description' => $request->description,
+            'requirements' => $request->requirements ?? [],
+            'perks' => $request->perks ?? [],
+            'type_contrat' => $request->type_contrat,
+            'secteur' => $request->secteur,
+            'localisation' => $request->localisation,
+            'salaire' => $request->salaire,
+            'experience' => $request->experience,
+            'niveau_etude' => $request->niveau_etude,
+            'competences' => $request->competences ?? [],
             'date_expiration' => $request->date_expiration,
-            'statut'          => 'active',
+            'statut' => 'active',
         ]);
 
         return response()->json([
-            'data'    => $offer,
+            'data' => $offer,
             'message' => 'Offre créée avec succès !',
         ], 201);
     }
@@ -120,7 +140,7 @@ if ($request->get('query')) {
         $offer = JobOffer::findOrFail($id);
         $employer = $request->user()->employer;
 
-        if (!$employer || $offer->employer_id !== $employer->id) {
+        if (! $employer || $offer->employer_id !== $employer->id) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -139,18 +159,19 @@ if ($request->get('query')) {
         $offer = JobOffer::findOrFail($id);
         $employer = $request->user()->employer;
 
-        if (!$employer || $offer->employer_id !== $employer->id) {
+        if (! $employer || $offer->employer_id !== $employer->id) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
         $offer->delete();
+
         return response()->json(['message' => 'Offre supprimée !']);
     }
 
     // Sauvegarder une offre
     public function save(Request $request, $id)
     {
-        if (!$request->user()->isCandidate()) {
+        if (! $request->user()->isCandidate()) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -167,7 +188,7 @@ if ($request->get('query')) {
     // Retirer une offre sauvegardée
     public function unsave(Request $request, $id)
     {
-        if (!$request->user()->isCandidate()) {
+        if (! $request->user()->isCandidate()) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -183,7 +204,7 @@ if ($request->get('query')) {
     // Liste des offres sauvegardées
     public function savedJobs(Request $request)
     {
-        if (!$request->user()->isCandidate()) {
+        if (! $request->user()->isCandidate()) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -193,7 +214,7 @@ if ($request->get('query')) {
             ->where('candidate_id', $candidate->id)
             ->latest()
             ->get()
-            ->map(fn($s) => $s->jobOffer);
+            ->map(fn ($s) => $s->jobOffer);
 
         return response()->json(['data' => $saved]);
     }
