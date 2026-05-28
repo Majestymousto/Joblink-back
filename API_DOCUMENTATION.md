@@ -1,6 +1,6 @@
 # JobLink Niger — Documentation API
 
-> Version : **v5.1** — Mise à jour : 24 Mai 2026
+> Version : **v6.0** — Mise à jour : 28 Mai 2026
 >
 > ✅ Tous les endpoints documentés ici sont testés et validés.
 
@@ -49,6 +49,7 @@ http://127.0.0.1:8001/api
 | Candidat | 👤 | Peut postuler, gérer son profil |
 | Employeur | 👔 | Peut publier des offres, voir les candidatures |
 | Admin | 🔑 | Gère la plateforme |
+| Super Admin | 👑 | Niveau supérieur — ne peut pas être supprimé ni suspendu |
 
 ---
 
@@ -59,7 +60,9 @@ http://127.0.0.1:8001/api
 ### `POST /api/register`
 🌐 **Public** — Créer un nouveau compte.
 
-> ⚠️ Le rôle `admin` n'est **pas accepté** ici pour des raisons de sécurité. Les admins sont créés uniquement via `POST /api/admin/users`.
+> ⚠️ Le rôle `admin` n'est **pas accepté** ici. Les admins sont créés uniquement via `POST /api/admin/users`.
+>
+> ⚠️ **v6.0** — L'inscription ne retourne plus de token. Un OTP est envoyé par email. Le compte doit être vérifié via `POST /api/email/verify` avant de pouvoir se connecter.
 
 **Body :**
 ```json
@@ -73,42 +76,13 @@ http://127.0.0.1:8001/api
 ```
 > `role` accepte : `candidate` ou `employer` uniquement.
 
-**Réponse 201 — Candidat :**
+**Réponse 201 :**
 ```json
 {
-    "token": "1|xxxxxxxxxxxxxxxx",
-    "user": {
-        "id": 1,
-        "name": "Moussa Diallo",
-        "email": "moussa@example.com",
-        "avatar": null,
-        "role": "candidate",
-        "profile": {
-            "titre_poste": null,
-            "bio": null,
-            "competences": null,
-            "cv_path": null,
-            "buildcvpro_token": null
-        }
-    }
+    "message": "Inscription réussie. Un code de vérification a été envoyé à votre adresse email.",
+    "email": "moussa@example.com"
 }
 ```
-
-**Réponse 201 — Employeur :**
-```json
-{
-    "token": "2|xxxxxxxxxxxxxxxx",
-    "user": {
-        "id": 2,
-        "role": "employer",
-        "profile": {
-            "nom_entreprise": "Optimus Engineering SARL",
-            "statut": "pending"
-        }
-    }
-}
-```
-> ⚠️ Compte employeur créé avec `statut: pending` — validation admin requise avant de pouvoir se connecter.
 
 **Réponse 422 — Validation échouée :**
 ```json
@@ -117,6 +91,66 @@ http://127.0.0.1:8001/api
     "errors": {
         "email": ["The email has already been taken."]
     }
+}
+```
+
+---
+
+### `POST /api/email/verify`
+🌐 **Public** — Vérifier son email avec le code OTP reçu.
+
+**Body :**
+```json
+{
+    "email": "moussa@example.com",
+    "otp": "259237"
+}
+```
+
+**Réponse 200 — Succès :**
+```json
+{
+    "message": "Email vérifié avec succès.",
+    "token": "1|xxxxxxxxxxxxxxxx",
+    "user": {
+        "id": 1,
+        "name": "Moussa Diallo",
+        "email": "moussa@example.com",
+        "role": "candidate"
+    }
+}
+```
+
+**Réponses d'erreur :**
+| Code | Message | Cause |
+|---|---|---|
+| 422 | Code OTP invalide | Mauvais code saisi |
+| 422 | Le code OTP a expiré | Code de plus de 10 minutes |
+| 422 | Ce compte est déjà vérifié | Email déjà confirmé |
+
+---
+
+### `POST /api/email/resend`
+🌐 **Public** — Renvoyer un nouveau code OTP.
+
+**Body :**
+```json
+{
+    "email": "moussa@example.com"
+}
+```
+
+**Réponse 200 :**
+```json
+{
+    "message": "Un nouveau code de vérification a été envoyé à votre adresse email."
+}
+```
+
+**Réponse 429 — Anti-spam :**
+```json
+{
+    "message": "Veuillez attendre avant de demander un nouveau code."
 }
 ```
 
@@ -147,6 +181,16 @@ http://127.0.0.1:8001/api
     "message": "Identifiants invalides."
 }
 ```
+
+**Réponse 403 — Email non vérifié :**
+```json
+{
+    "message": "Veuillez vérifier votre adresse email avant de vous connecter.",
+    "status": "unverified",
+    "email": "moussa@example.com"
+}
+```
+> ➡️ Rediriger vers l'écran de vérification OTP avec l'email.
 
 **Réponse 403 — Employeur en attente :**
 ```json
@@ -472,8 +516,75 @@ http://127.0.0.1:8001/api
 
 ---
 
+### `PUT /api/candidatures/{id}`
+🔒 **Protégé** | 👤 **Candidat propriétaire** — Modifier sa candidature.
+
+> ⚠️ Uniquement possible si l'employeur **n'a pas encore ouvert** la candidature (`is_opened: false`).
+
+**Body :**
+```json
+{
+    "message": "Nouveau message de motivation mis à jour.",
+    "cv_path": "cvs/nouveau-cv.pdf",
+    "buildcvpro_cv_id": "abc123"
+}
+```
+
+**Réponse 200 :**
+```json
+{
+    "message": "Candidature modifiée avec succès.",
+    "data": { ... }
+}
+```
+
+**Réponse 403 — Déjà consultée :**
+```json
+{
+    "message": "Vous ne pouvez plus modifier cette candidature, elle a déjà été consultée par l'employeur."
+}
+```
+
+---
+
 ### `GET /api/job-offers/{id}/candidats`
-🔒 **Protégé** | 👔 **Employeur propriétaire de l'offre** — Voir les candidats.
+🔒 **Protégé** | 👔 **Employeur propriétaire de l'offre** — Voir les candidats reçus.
+
+> ⚠️ **v6.0** — Marque automatiquement toutes les candidatures comme `is_opened: true` à la consultation. Supporte les filtres et le tri.
+
+**Query params :**
+
+| Param | Type | Exemple | Description |
+|---|---|---|---|
+| `competence` | string | `?competence=php` | Filtre par compétence du candidat |
+| `localisation` | string | `?localisation=Niamey` | Filtre par ville du candidat |
+| `sort_by` | string | `?sort_by=experiences` | Tri : `experiences` ou `date` (défaut) |
+| `sort_dir` | string | `?sort_dir=asc` | Ordre : `asc` ou `desc` (défaut) |
+
+**Réponse 200 :**
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "status": "pending",
+            "is_opened": true,
+            "date": "28 Mai 2026",
+            "message": "Je suis très intéressé...",
+            "candidat": {
+                "id": 3,
+                "name": "Moussa Diallo",
+                "email": "moussa@example.com",
+                "avatar": null,
+                "titre_poste": "Développeur Web",
+                "localisation": "Niamey",
+                "competences": ["Laravel", "Vue.js"],
+                "nb_experiences": 3
+            }
+        }
+    ]
+}
+```
 
 ---
 
@@ -932,22 +1043,46 @@ logo → fichier image JPEG/PNG/WebP (max 2MB)
 ---
 
 ### `POST /api/admin/users`
-🔒 **Protégé** | 🔑 **Admin** — Créer un utilisateur (y compris `admin`).
+🔒 **Protégé** | 🔑 **Admin / 👑 Super Admin** — Créer un utilisateur.
+
+> Un `admin` peut créer des rôles : `admin`, `employer`, `candidate`.
+> Un `super_admin` peut aussi créer un `super_admin`.
+> Les utilisateurs créés par un admin ont `email_verified_at` renseigné automatiquement.
 
 ---
 
 ### `PUT /api/admin/users/{id}`
-🔒 **Protégé** | 🔑 **Admin** — Modifier un utilisateur.
+🔒 **Protégé** | 🔑 **Admin / 👑 Super Admin** — Modifier un utilisateur.
+
+> ⚠️ Un `admin` ne peut **pas modifier** un `super_admin`. Seul un `super_admin` peut le faire.
 
 ---
 
 ### `DELETE /api/admin/users/{id}`
 🔒 **Protégé** | 🔑 **Admin** — Supprimer un utilisateur définitivement.
 
+> ⚠️ Un compte `super_admin` **ne peut jamais être supprimé**, même par un autre super_admin.
+
+**Réponse 403 — Tentative de suppression d'un super_admin :**
+```json
+{
+    "message": "Le super administrateur ne peut pas être supprimé."
+}
+```
+
 ---
 
 ### `PATCH /api/admin/users/{id}/toggle-status`
 🔒 **Protégé** | 🔑 **Admin** — Activer ou désactiver un compte utilisateur.
+
+> ⚠️ Un compte `super_admin` **ne peut pas être suspendu**.
+
+**Réponse 403 — Tentative de suspension d'un super_admin :**
+```json
+{
+    "message": "Le super administrateur ne peut pas être suspendu."
+}
+```
 
 ---
 
@@ -974,25 +1109,30 @@ logo → fichier image JPEG/PNG/WebP (max 2MB)
 
 ## 🔒 Permissions par rôle
 
-| Action | 🌐 Public | 👤 Candidat | 👔 Employeur | 🔑 Admin |
-|---|---|---|---|---|
-| Voir les offres | ✅ | ✅ | ✅ | ✅ |
-| Voir les entreprises | ✅ | ✅ | ✅ | ✅ |
-| Voir les avis approuvés | ✅ | ✅ | ✅ | ✅ |
-| Postuler | ❌ | ✅ | ❌ | ❌ |
-| Sauvegarder une offre | ❌ | ✅ | ❌ | ❌ |
-| Uploader un CV | ❌ | ✅ | ❌ | ❌ |
-| Connecter Build CV Pro | ❌ | ✅ | ❌ | ❌ |
-| Gérer expériences / formations | ❌ | ✅ | ❌ | ❌ |
-| Soumettre un avis | ❌ | ✅ | ❌ | ❌ |
-| Publier une offre | ❌ | ❌ | ✅ | ✅ |
-| Voir les candidatures | ❌ | Les siennes | ✅ | ✅ |
-| Voir les profils candidats | ❌ | ❌ | ✅ | ✅ |
-| Envoyer des messages | ❌ | ✅ | ✅ | ❌ |
-| Valider un employeur | ❌ | ❌ | ❌ | ✅ |
-| Gérer les utilisateurs | ❌ | ❌ | ❌ | ✅ |
-| Voir les stats | ❌ | ❌ | ❌ | ✅ |
-| Modérer les avis | ❌ | ❌ | ❌ | ✅ |
+| Action | 🌐 Public | 👤 Candidat | 👔 Employeur | 🔑 Admin | 👑 Super Admin |
+|---|---|---|---|---|---|
+| Voir les offres | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Voir les entreprises | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Voir les avis approuvés | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Postuler | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Modifier sa candidature | ❌ | ✅ (si non ouverte) | ❌ | ❌ | ❌ |
+| Sauvegarder une offre | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Uploader un CV | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Connecter Build CV Pro | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Gérer expériences / formations | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Soumettre un avis | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Publier une offre | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Voir les candidatures | ❌ | Les siennes | ✅ | ✅ | ✅ |
+| Filtrer/trier les candidatures | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Voir les profils candidats | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Envoyer des messages | ❌ | ✅ | ✅ | ❌ | ❌ |
+| Valider un employeur | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Gérer les utilisateurs | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Créer un super_admin | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Supprimer / suspendre un admin | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Supprimer / suspendre un super_admin | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Voir les stats | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Modérer les avis | ❌ | ❌ | ❌ | ✅ | ✅ |
 
 ---
 
@@ -1005,4 +1145,5 @@ logo → fichier image JPEG/PNG/WebP (max 2MB)
 | v3.0 | 01 Mai 2026 | Ajout gestion utilisateurs admin, expériences & formations candidat, preview CV BuildCVPro |
 | v4.0 | 01 Mai 2026 | Ajout endpoints publics entreprises (liste + détail avec offres actives) |
 | v5.0 | 08 Mai 2026 | Ajout module Avis complet (POST /api/avis, GET /api/avis/approved, GET+POST admin/avis), stats weekly et region |
-| v5.1 | 24 Mai 2026 | Ajout GET /api/employer/job-offers, GET /api/stats/public, POST /api/profil/logo — correction paramètre sort (`salary` et non `company`) |
+| v5.1 | 24 Mai 2026 | Ajout GET /api/employer/job-offers, GET /api/stats/public, POST /api/profil/logo — correction paramètre sort |
+| v6.0 | 28 Mai 2026 | Vérification email par OTP (register, email/verify, email/resend) — Modification candidature avant ouverture (PUT /candidatures/{id}) — Filtres et tri sur les candidats reçus — Hiérarchie Super Admin / Admin |

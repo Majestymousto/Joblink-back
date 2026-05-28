@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/google', [AuthController::class, 'googleAuth']);
+Route::post('/email/verify', [AuthController::class, 'verifyOtp']);
+Route::post('/email/resend', [AuthController::class, 'resendOtp']);
 
 // Offres publiques
 Route::get('/job-offers', [JobOfferController::class, 'index']);
@@ -60,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Candidatures — Candidat
     Route::post('/job-offers/{id}/apply', [ApplicationController::class, 'apply']);
     Route::get('/mes-candidatures', [ApplicationController::class, 'myApplications']);
+    Route::put('/candidatures/{id}', [ApplicationController::class, 'update']);
     Route::delete('/candidatures/{id}', [ApplicationController::class, 'withdraw']);
     Route::post('/avis', [AvisController::class, 'store']);
 

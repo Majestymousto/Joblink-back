@@ -19,6 +19,8 @@ class User extends Authenticatable
         'avatar',
         'role',
         'is_active',
+        'otp_code',
+        'otp_expires_at',
     ];
 
     protected $hidden = [
@@ -29,7 +31,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
+        'otp_expires_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     // Relations
@@ -56,6 +59,11 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin']);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
     }
 }
