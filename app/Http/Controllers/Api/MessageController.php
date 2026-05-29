@@ -29,6 +29,7 @@ class MessageController extends Controller
                 'entreprise' => [
                     'id'   => $app->jobOffer->employer->id,
                     'nom'  => $app->jobOffer->employer->nom_entreprise,
+                    'logo' => $app->jobOffer->employer->logo ? asset('storage/' . $app->jobOffer->employer->logo) : null, // ← AJOUT DU LOGO
                 ],
                 'dernier_message' => $app->messages->first()?->content ?? null,
                 'unread'          => Message::where('application_id', $app->id)
@@ -57,7 +58,7 @@ class MessageController extends Controller
                 'candidat' => [
                     'id'     => $app->candidate->id,
                     'name'   => $app->candidate->user->name,
-                    'avatar' => $app->candidate->user->avatar,
+                    'avatar' => $app->candidate->user->avatar ? asset('storage/' . $app->candidate->user->avatar) : null,
                 ],
                 'dernier_message' => $app->messages->first()?->content ?? null,
                 'unread'          => Message::where('application_id', $app->id)
@@ -68,6 +69,8 @@ class MessageController extends Controller
 
             return response()->json(['data' => $applications]);
         }
+        
+        return response()->json(['message' => 'Non autorisé.'], 403);
     }
 
     // Messages d'une conversation
@@ -75,9 +78,10 @@ class MessageController extends Controller
     {
         $user        = $request->user();
         $application = Application::find($applicationId);
-if (!$application) {
-    return response()->json(['message' => 'Conversation introuvable.'], 404);
-}
+        
+        if (!$application) {
+            return response()->json(['message' => 'Conversation introuvable.'], 404);
+        }
 
         // Vérifier que l'utilisateur a accès à cette conversation
         if ($user->isCandidate() && $application->candidate_id !== $user->candidate->id) {
@@ -113,9 +117,10 @@ if (!$application) {
     {
         $user        = $request->user();
         $application = Application::find($applicationId);
-if (!$application) {
-    return response()->json(['message' => 'Conversation introuvable.'], 404);
-}
+        
+        if (!$application) {
+            return response()->json(['message' => 'Conversation introuvable.'], 404);
+        }
 
         // Vérifier accès
         if ($user->isCandidate() && $application->candidate_id !== $user->candidate->id) {

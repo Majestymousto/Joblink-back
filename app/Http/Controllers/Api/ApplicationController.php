@@ -53,7 +53,7 @@ class ApplicationController extends Controller
         ], 201);
     }
 
-    // Mes candidatures (candidat)
+    // Mes candidatures (candidat) - AVEC LOGO
     public function myApplications(Request $request)
     {
         if (! $request->user()->isCandidate()) {
@@ -77,6 +77,9 @@ class ApplicationController extends Controller
                     'type_contrat' => $app->jobOffer->type_contrat,
                     'localisation' => $app->jobOffer->localisation,
                     'entreprise' => $app->jobOffer->employer->nom_entreprise,
+                    'employer_logo' => $app->jobOffer->employer && $app->jobOffer->employer->logo 
+                        ? asset('storage/' . $app->jobOffer->employer->logo) 
+                        : null, // ← AJOUT DU LOGO DE L'ENTREPRISE
                 ],
             ]);
 
@@ -103,7 +106,7 @@ class ApplicationController extends Controller
         return response()->json(['message' => 'Candidature retirée.']);
     }
 
-    // Voir les candidats d'une offre (entreprise)
+    // Voir les candidats d'une offre (entreprise) - AVEC LOGO
     public function jobCandidates(Request $request, $id)
     {
         if (! $request->user()->isEmployer()) {
@@ -155,6 +158,11 @@ class ApplicationController extends Controller
         // Marquer toutes les candidatures non ouvertes comme ouvertes
         $applications->where('is_opened', false)->each(fn ($app) => $app->update(['is_opened' => true]));
 
+        // Récupérer le logo de l'entreprise pour l'offre
+        $employerLogo = $offer->employer && $offer->employer->logo 
+            ? asset('storage/' . $offer->employer->logo) 
+            : null;
+
         return response()->json([
             'data' => $applications->map(fn ($app) => [
                 'id' => $app->id,
@@ -162,6 +170,7 @@ class ApplicationController extends Controller
                 'is_opened' => $app->is_opened,
                 'date' => $app->created_at->format('d M Y'),
                 'message' => $app->message,
+                'employer_logo' => $employerLogo, // ← AJOUT DU LOGO DE L'ENTREPRISE POUR L'OFFRE
                 'candidat' => [
                     'id' => $app->candidate->id,
                     'name' => $app->candidate->user->name,

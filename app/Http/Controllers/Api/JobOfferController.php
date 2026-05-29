@@ -15,7 +15,6 @@ class JobOfferController extends Controller
         $query = JobOffer::with('employer')->where('statut', 'active');
 
         // Recherche par mot clé
-        // Après
         if ($request->get('query')) {
             $search = $request->get('query');
             $query->where(function ($q) use ($search) {
@@ -49,6 +48,14 @@ class JobOfferController extends Controller
 
         $offers = $query->paginate(8);
 
+        // Ajouter le logo de l'employeur à chaque offre
+        $offers->getCollection()->transform(function ($offer) {
+            $offer->employer_logo = $offer->employer && $offer->employer->logo 
+                ? asset('storage/' . $offer->employer->logo) 
+                : null;
+            return $offer;
+        });
+
         return response()->json($offers);
     }
 
@@ -58,12 +65,24 @@ class JobOfferController extends Controller
         $offer = JobOffer::with('employer')->findOrFail($id);
         $offer->increment('vues');
 
-        // Offres similaires
+        // Ajouter le logo de l'employeur
+        $offer->employer_logo = $offer->employer && $offer->employer->logo 
+            ? asset('storage/' . $offer->employer->logo) 
+            : null;
+
+        // Offres similaires avec leurs logos
         $similar = JobOffer::where('secteur', $offer->secteur)
             ->where('id', '!=', $offer->id)
             ->where('statut', 'active')
+            ->with('employer')
             ->limit(3)
-            ->get();
+            ->get()
+            ->map(function ($similarOffer) {
+                $similarOffer->employer_logo = $similarOffer->employer && $similarOffer->employer->logo 
+                    ? asset('storage/' . $similarOffer->employer->logo) 
+                    : null;
+                return $similarOffer;
+            });
 
         return response()->json([
             'data' => $offer,
@@ -86,7 +105,13 @@ class JobOfferController extends Controller
 
         $offers = JobOffer::where('employer_id', $employer->id)
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($offer) use ($employer) {
+                $offer->employer_logo = $employer->logo 
+                    ? asset('storage/' . $employer->logo) 
+                    : null;
+                return $offer;
+            });
 
         return response()->json(['data' => $offers]);
     }
@@ -127,6 +152,11 @@ class JobOfferController extends Controller
             'date_expiration' => $request->date_expiration,
             'statut' => 'active',
         ]);
+
+        // Ajouter le logo à la réponse
+        $offer->employer_logo = $employer->logo 
+            ? asset('storage/' . $employer->logo) 
+            : null;
 
         return response()->json([
             'data' => $offer,
@@ -214,7 +244,13 @@ class JobOfferController extends Controller
             ->where('candidate_id', $candidate->id)
             ->latest()
             ->get()
-            ->map(fn ($s) => $s->jobOffer);
+            ->map(function ($s) {
+                $jobOffer = $s->jobOffer;
+                $jobOffer->employer_logo = $jobOffer->employer && $jobOffer->employer->logo 
+                    ? asset('storage/' . $jobOffer->employer->logo) 
+                    : null;
+                return $jobOffer;
+            });
 
         return response()->json(['data' => $saved]);
     }
